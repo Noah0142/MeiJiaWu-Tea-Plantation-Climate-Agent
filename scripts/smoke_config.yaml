@@ -1,0 +1,47 @@
+# 冒烟测试配置: 指向合成数据。真实数据到达后改用 config.yaml。
+site:
+  name: "合成测试"
+  lat: 30.2272
+  lon: 120.1014
+  garden_elevation_m: 80
+  station_elevation_m: 43
+  timezone: "Asia/Shanghai"
+
+data:
+  background: "data/synthetic/background.csv"
+  labels: "data/synthetic/labels.csv"
+  static: ""
+  events: "data/synthetic/events.csv"
+  processed: "data/processed/dataset_synthetic.parquet"
+
+columns:
+  time: "time"
+  background: {t2m: "t2m", d2m: "d2m", u10: "u10", v10: "v10", ssr: "ssr", tp: "tp", stl1: "stl1", swvl1: "swvl1", sp: "sp"}
+  labels: {obs_t2m: "obs_t2m", obs_rh: "obs_rh", obs_ws: "obs_ws", obs_wd: "obs_wd"}
+
+horizons: [1, 3, 6, 12, 24, 36, 48, 72]
+
+split:
+  test_start: "2024-11-01"
+
+model:
+  output_dir: "models/artifacts_smoke"   # 独立目录, 避免覆盖真实数据训练的模型
+  lapse_rate_c_per_100m: -0.65
+  target_mode: "error"     # error = 学(实况-格点值)残差(御茶村同款); direct = 直接学实况
+  neighbors_k: 1           # 邻站协同特征数(多站时)
+  lgbm:
+    n_estimators: 200
+    learning_rate: 0.1
+    num_leaves: 31
+    min_child_samples: 50
+    subsample: 0.9
+    colsample_bytree: 0.9
+    reg_lambda: 1.0
+    n_jobs: -1
+    verbose: -1
+
+risk:
+  frost_tmin: 4.0
+  heat_tmax: 35.0
+  heat_tmean: 30.0
+  coldspell_apr_mean: 11.0

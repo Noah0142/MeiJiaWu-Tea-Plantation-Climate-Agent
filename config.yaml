@@ -1,0 +1,71 @@
+# 梅家坞茶园微气候模型 · 全局配置
+# 团队拿到数据后: 把 CSV 放进 data/raw/, 改下面的路径与列名映射即可, 代码不用动。
+
+site:
+  name: "梅家坞茶园"
+  lat: 30.2272
+  lon: 120.1014
+  garden_elevation_m: 180     # 茶园参考海拔(Open-Meteo 文件口径)
+  station_elevation_m: 180    # 标签序列同口径(自监督模式), 递减率基线退化为持续预报
+  timezone: "Asia/Shanghai"
+
+data:
+  background: "data/raw/background.csv"   # ERA5-Land 单格点 76 年逐小时(北京时间)
+  labels: "data/raw/labels.csv"           # 同一序列的自监督标签(obs_t2m/obs_rh)
+  static: "data/raw/static.csv"           # 点位 + 茶园土地覆盖静态特征
+  events: ""                              # 可选: 历史霜冻/热害事件
+  processed: "data/processed/dataset.parquet"
+
+# 列名映射: 你们的列名 → 标准名。改这里即可, 不用改代码。
+columns:
+  time: "time"
+  background:
+    t2m: "t2m"
+    d2m: "d2m"
+    ssr: "ssr"        # 短波辐射 W/m²
+    tp: "tp"          # 逐小时降水 mm
+    skt: "skt"        # 地表皮肤温度 ℃
+    stl1: "stl1"      # 土壤温度 0-7cm ℃
+    stl2: "stl2"      # 7-28cm
+    stl3: "stl3"      # 28-100cm
+    stl4: "stl4"      # 100-289cm
+    swvl1: "swvl1"    # 土壤湿度 0-7cm m³/m³
+    swvl2: "swvl2"
+    swvl3: "swvl3"
+    swvl4: "swvl4"
+  labels:
+    obs_t2m: "obs_t2m"
+    obs_rh: "obs_rh"
+
+# 预测时效(小时)
+horizons: [1, 3, 6, 12, 24, 48, 72]
+
+# 严格三段切分(时间顺序, 互不重叠):
+# train 1981-2020(卫星时代, 数据同质) | val 2021-2024(早停/选型) | test 2025-2026(最终报告, 只评一次)
+split:
+  train_start: "1981-01-01"
+  val_start: "2021-01-01"
+  test_start: "2025-01-01"
+
+model:
+  output_dir: "models/artifacts"
+  lapse_rate_c_per_100m: -0.65
+  target_mode: "direct"       # 自监督: 直接预测 t+h 的本地气温(无未来背景场可用)
+  inject_plus_h: false        # 不注入 bg_*_plus_h —— 运行时只依赖传感器历史, 不依赖数值预报
+  neighbors_k: 0              # 单点位, 无邻站
+  lgbm:
+    n_estimators: 800
+    learning_rate: 0.05
+    num_leaves: 63
+    min_child_samples: 50
+    subsample: 0.9
+    colsample_bytree: 0.9
+    reg_lambda: 1.0
+    n_jobs: -1
+    verbose: -1
+
+risk:
+  frost_tmin: 4.0       # 日最低温 ≤4℃ 记霜冻事件(分级: 2~4 轻 / 0~2 中 / <0 重)
+  heat_tmax: 35.0       # 日最高温 ≥35℃ 或日均温 ≥30℃ 记高温热害
+  heat_tmean: 30.0
+  coldspell_apr_mean: 11.0  # 浙江倒春寒: 4 月连续 3 天日均温 <11℃

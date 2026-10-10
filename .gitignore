@@ -1,0 +1,26 @@
+# ===== 密钥(严禁提交) =====
+agent/.env
+
+# ===== 原始数据与大数据产物 =====
+training_data/
+data/
+models/artifacts/
+models/artifacts_smoke/
+*.parquet
+*.joblib
+
+# ===== 参考仓库(见 README 链接, 不随本项目提交) =====
+web/sensor-network/
+web/garden-skills/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
+.zcode/
+web/models/

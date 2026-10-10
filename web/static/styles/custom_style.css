@@ -1,0 +1,360 @@
+/* ============================================================
+   梅家坞茶园微气候智能体 · 设计系统
+   Design Read: 茶园气象仪表(warm-dark 数据工具)
+   - 调色板: oklch, 松针墨绿底 / 茶青主色 / 暖米白正文 / 琥珀警示 / 霜青·朱红风险语义色
+   - 字体: Noto Serif SC(标题) + Noto Sans SC(正文) + 等宽数字
+   - 间距 4px 基数; 圆角语义化(卡片 14 / 胶囊 999 / 输入 10)
+   - 阴影克制(描边分层), 动效 200ms 淡入 + 悬停, 尊重 prefers-reduced-motion
+   ============================================================ */
+
+/* ---------- 设计令牌 ---------- */
+:root[data-theme="dark"] {
+  --bg: oklch(0.155 0.018 155);
+  --surface: oklch(0.205 0.02 155);
+  --surface-2: oklch(0.245 0.022 155);
+  --border: oklch(0.33 0.02 155);
+  --text: oklch(0.93 0.016 95);
+  --text-muted: oklch(0.70 0.016 95);
+  --c-primary: oklch(0.68 0.13 152);        /* 茶青 */
+  --c-primary-dim: oklch(0.46 0.10 152);
+  --c-amber: oklch(0.80 0.13 82);           /* 琥珀(轻度预警) */
+  --c-frost: oklch(0.74 0.08 220);          /* 霜青(低温语义) */
+  --c-danger: oklch(0.66 0.17 25);          /* 朱红(重度风险) */
+  --chart-grid: oklch(0.36 0.02 155);
+}
+:root[data-theme="light"] {
+  --bg: oklch(0.975 0.008 95);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.955 0.01 95);
+  --border: oklch(0.88 0.012 155);
+  --text: oklch(0.24 0.03 155);
+  --text-muted: oklch(0.48 0.025 155);
+  --c-primary: oklch(0.50 0.11 152);
+  --c-primary-dim: oklch(0.62 0.09 152);
+  --c-amber: oklch(0.62 0.12 70);
+  --c-frost: oklch(0.55 0.08 225);
+  --c-danger: oklch(0.55 0.19 25);
+  --chart-grid: oklch(0.90 0.01 155);
+}
+
+/* ---------- 映射到 Pico 结构变量(保留其布局能力, 换掉其皮肤) ---------- */
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  --pico-background-color: var(--bg);
+  --pico-color: var(--text);
+  --pico-muted-color: var(--text-muted);
+  --pico-card-background-color: var(--surface);
+  --pico-card-border-color: var(--border);
+  --pico-border-color: var(--border);
+  --pico-primary: var(--c-primary);
+  --pico-primary-hover: var(--c-primary-dim);
+  --pico-card-border-radius: 14px;
+}
+
+/* ---------- 字体 ---------- */
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  background: var(--bg);
+  text-wrap: pretty;
+}
+h1, h2, h3, h4, h5 {
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+h3 { font-size: 1.12rem; }
+h4 { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+small { color: var(--text-muted); }
+
+/* ---------- 头部 ---------- */
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 0 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.site-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 1;
+  min-width: 260px;
+}
+.site-header h1 { margin: 0; }
+.site-header .sub { display: block; font-size: 0.85rem; color: var(--text-muted); }
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.live-pill .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c-primary);
+  animation: pulse 2.4s ease-out infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--c-primary) 45%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.theme-toggle {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--c-primary-dim); }
+
+/* ---------- 卡片 ---------- */
+.grid > * > a { display: block; height: 100%; }
+.grid article {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.grid article:hover {
+  transform: translateY(-1px);
+  border-color: var(--c-primary-dim);
+}
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin: 0.2rem 0;
+}
+.metric-label { color: var(--text-muted); font-size: 0.8rem; }
+.metric-card h3:first-child {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 400;
+}
+
+/* ---------- 间距系统: 卡片间隔明确分隔, 不粘连 ---------- */
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  --pico-grid-column-gap: 1.5rem;
+  --pico-grid-row-gap: 1.5rem;
+}
+
+/* ---------- 面板 ---------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.panel h3 { margin-top: 0; }
+.panel .grid + .grid { margin-top: 1.25rem; }  /* 面板内多行卡片组之间的空隙 */
+.grid.align-start { align-items: start; }      /* 卡片组内按内容高度对齐, 不拉伸留白 */
+
+/* ---------- 风险窗口 ---------- */
+.risk-window {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0;
+  border-bottom: 1px dashed var(--border);
+}
+.risk-window:last-child { border-bottom: none; }
+.risk-window b { font-family: "Noto Serif SC", serif; }
+.risk-window .detail { color: var(--text-muted); font-size: 0.82rem; width: 100%; }
+.chip {
+  display: inline-block;
+  padding: 0.18rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.chip.g0 { color: var(--c-primary); border-color: color-mix(in oklab, var(--c-primary) 40%, transparent); }
+.chip.g1 { color: var(--c-amber); border-color: color-mix(in oklab, var(--c-amber) 45%, transparent); }
+.chip.g2 { color: var(--c-amber); border-color: var(--c-amber); background: color-mix(in oklab, var(--c-amber) 10%, transparent); }
+.chip.g3 { color: var(--c-danger); border-color: var(--c-danger); background: color-mix(in oklab, var(--c-danger) 12%, transparent); }
+
+/* Pico 会把 button 默认为 100% 宽 —— 修正 flex 行内的按钮与输入, 否则输入框会被挤成一条缝 */
+.site-header .theme-toggle, .chat-form button, .quick-chips .chip,
+.connect-row button, .result-meta .chip.refresh { width: auto; margin: 0; }
+.chat-form input, .connect-row input { margin: 0; }
+
+/* ---------- 对话 ---------- */
+.chat-box {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem;
+  margin-bottom: 0.75rem;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  scrollbar-width: thin;
+}
+.chat-msg {
+  max-width: 85%;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}
+.chat-msg.agent {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.chat-msg.user {
+  align-self: flex-end;
+  background: color-mix(in oklab, var(--c-primary) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--c-primary) 35%, transparent);
+  border-bottom-right-radius: 4px;
+}
+.chat-form { display: flex; gap: 0.5rem; }
+.chat-form input {
+  flex: 1;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.chat-form input:focus { border-color: var(--c-primary); box-shadow: none; }
+.chat-form button {
+  border-radius: 10px;
+  background: var(--c-primary-dim);
+  border: none;
+  color: var(--bg);
+  font-weight: 500;
+}
+.chat-form button:hover { background: var(--c-primary); }
+.quick-chips { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
+.quick-chips .chip { cursor: pointer; font-size: 0.78rem; padding: 0.28rem 0.75rem; }
+.quick-chips .chip:hover { color: var(--text); border-color: var(--c-primary-dim); }
+
+/* ---------- API 面板 ---------- */
+.api-json {
+  max-height: 320px;
+  overflow: auto;
+  font-size: 0.78rem;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 0.8rem;
+  border-radius: 10px;
+}
+
+/* ---------- 图表 ---------- */
+.chart { width: 100%; height: 65vh; }
+.sensor-chart { height: 40vh; min-height: 260px; }
+
+/* ---------- 动效(尊重 reduced-motion) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  main.container > * { animation: rise 0.4s ease-out both; }
+  main.container > *:nth-child(2) { animation-delay: 0.03s; }
+  main.container > *:nth-child(3) { animation-delay: 0.06s; }
+  main.container > *:nth-child(4) { animation-delay: 0.09s; }
+  main.container > *:nth-child(5) { animation-delay: 0.12s; }
+  main.container > *:nth-child(6) { animation-delay: 0.15s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-pill .dot { animation: none; }
+  .grid article, .chat-form button, .quick-chips .chip, .theme-toggle { transition: none; }
+}
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 700px) {
+  body { font-size: 15px; }
+  .metric-value { font-size: 1.5rem; }
+  .chat-msg { max-width: 92%; }
+  .site-header .brand { min-width: 0; }
+  .chart { height: 55vh; }
+}
+
+/* ---------- 实时气候数据小卡(Open-Meteo 自动取数) ---------- */
+.api-chart { height: 200px; margin: 0.4rem 0 0.6rem; }
+.api-caption {
+  display: block;
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.query-status { display: flex; align-items: center; gap: 0.5rem; min-height: 1.6rem; margin: 0.35rem 0; }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.result-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0.4rem 0 0.2rem; }
+.result-meta .chip.refresh { cursor: pointer; }
+.result-meta .chip.refresh:hover { color: var(--text); border-color: var(--c-primary-dim); }
+
+/* ---------- 数据源接入卡 ---------- */
+.connect-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.6rem; align-items: center; }
+.connect-row input {
+  flex: 1;
+  min-width: 140px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.connect-row input:focus { border-color: var(--c-primary); box-shadow: none; }
+.connect-row button {
+  border-radius: 10px;
+  background: var(--c-primary-dim);
+  border: none;
+  color: var(--bg);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.connect-row button:hover { background: var(--c-primary); }
+.connect-row button:disabled { opacity: 0.55; cursor: wait; }
+
+/* 接入卡"恢复默认模型"次级按钮: 与设计系统一致(面+描边), 不用 Pico 默认轮廓 */
+.connect-row button.secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+.connect-row button.secondary:hover {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--c-primary-dim);
+}

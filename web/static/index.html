@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>梅家坞茶园微气候智能体</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/pico.min.css?v=3">
+  <link rel="stylesheet" href="styles/custom_style.css?v=3">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="echarts.min.js?v=3"></script>
+</head>
+<body>
+  <main class="container">
+    <!-- 品牌头部 -->
+    <header class="site-header">
+      <div class="brand">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="19" stroke="var(--border)" stroke-width="1.5"/>
+          <path d="M20 29 C 14 23, 13 16, 20 10 C 27 16, 26 23, 20 29 Z"
+                stroke="var(--c-primary)" stroke-width="1.8" fill="oklch(0.68 0.13 152 / 0.12)"/>
+          <path d="M20 29 L 20 20 M 20 22 L 13 17 M 20 24 L 27 19"
+                stroke="var(--c-primary)" stroke-width="1.2"/>
+        </svg>
+        <div>
+          <h1>梅家坞茶园微气候智能体</h1>
+          <span class="sub">杭州西湖 · 0–72h 微气候预报 · 霜冻/高温预警 · 农事对话助手</span>
+        </div>
+      </div>
+      <span class="live-pill"><span class="dot"></span><span id="issued-at">预报时间: 加载中…</span></span>
+      <button class="theme-toggle" id="theme-toggle" aria-label="切换明暗主题">浅色</button>
+    </header>
+
+    <!-- 实时卡片 -->
+    <div class="grid">
+      <div class="metric-card"><article>
+        <h3>当前气温</h3>
+        <h3 class="metric-value" id="card-tnow" style="color: var(--c-amber)">—</h3>
+        <small class="metric-label" id="card-tnow-t"></small>
+      </article></div>
+      <div class="metric-card"><article>
+        <h3>当前湿度</h3>
+        <h3 class="metric-value" id="card-rh" style="color: var(--c-frost)">—</h3>
+        <small class="metric-label">相对湿度</small>
+      </article></div>
+      <div class="metric-card"><article>
+        <h3>未来 24h 最低温</h3>
+        <h3 class="metric-value" id="card-tmin" style="color: var(--c-frost)">—</h3>
+        <small class="metric-label" id="card-frost">霜冻风险: —</small>
+      </article></div>
+      <div class="metric-card"><article>
+        <h3>未来 72h 最高温</h3>
+        <h3 class="metric-value" id="card-tmax" style="color: var(--c-amber)">—</h3>
+        <small class="metric-label" id="card-heat">高温风险: —</small>
+      </article></div>
+    </div>
+
+    <!-- 预报图 -->
+    <article class="panel">
+      <h3>茶园气温预报 <small>近 48h 实况 + 未来 72h · P10–P90 为 80% 置信区间</small></h3>
+      <div id="chart" class="chart"></div>
+    </article>
+
+    <!-- 历史实况曲线 -->
+    <article class="panel">
+      <h3>历史实况曲线 <small>近 6 天 · 可缩放 · 含最高/最低标注点与平均值标注线</small></h3>
+      <div class="grid">
+        <div>
+          <h4 style="color: var(--c-primary)">气温</h4>
+          <div id="sensor-temp" class="chart sensor-chart"></div>
+        </div>
+        <div>
+          <h4 style="color: var(--c-primary)">湿度</h4>
+          <div id="sensor-hum" class="chart sensor-chart"></div>
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <h4 style="color: var(--c-primary)">土壤温度</h4>
+          <div id="sensor-soilt" class="chart sensor-chart"></div>
+        </div>
+        <div>
+          <h4 style="color: var(--c-primary)">土壤湿度(1–3cm)</h4>
+          <div id="sensor-soilm" class="chart sensor-chart"></div>
+        </div>
+      </div>
+    </article>
+
+    <div class="grid align-start">
+      <!-- 风险面板 -->
+      <div>
+        <article class="panel">
+          <h3>风险预警</h3>
+          <div id="risk-panel"><small>加载中…</small></div>
+        </article>
+      </div>
+      <!-- Agent 输出 -->
+      <div>
+        <article class="panel">
+          <h3>AI 农事建议</h3>
+          <div id="agent-summary" class="api-caption"></div>
+        </article>
+      </div>
+    </div>
+
+    <!-- 实时气候数据(Open-Meteo 自动取数, 直接出曲线) -->
+    <article class="panel">
+      <h3>实时气候数据 <small>Open-Meteo 免费接口自动获取 · 梅家坞茶园</small></h3>
+      <div class="result-meta">
+        <span class="chip g0" id="api-card-source">接口: /forecast</span>
+        <span class="chip" id="api-card-updated">更新于 —</span>
+        <span class="chip refresh" id="api-card-refresh">更新数据</span>
+      </div>
+      <div id="api-chart" class="chart api-chart"></div>
+      <div id="climate-status" class="query-status" role="status"></div>
+      <small class="api-caption" id="api-caption">加载中…</small>
+    </article>
+
+    <!-- 数据源接入(像接入大模型一样接入气象 API) -->
+    <article class="panel">
+      <h3>数据源接入 <small>输入气象 API 密钥(当前支持 Open-Meteo, 免费额度可留空), 用返回数据驱动上方卡片与曲线</small></h3>
+      <div class="connect-row">
+        <span class="chip g0">服务商: Open-Meteo</span>
+        <input type="password" id="api-key-input" placeholder="API 密钥(可留空)" autocomplete="off">
+      </div>
+      <div class="connect-row">
+        <input type="number" step="0.0001" id="api-lat-input" value="30.2272" placeholder="纬度">
+        <input type="number" step="0.0001" id="api-lon-input" value="120.1014" placeholder="经度">
+        <button type="button" id="api-connect-btn">连接</button>
+        <button type="button" class="secondary" id="api-reset-btn" hidden>恢复默认模型</button>
+      </div>
+      <div id="api-connect-status" class="query-status" role="status"></div>
+    </article>
+
+    <!-- 对话对话框 -->
+    <article class="panel">
+      <h3>和农事助手继续聊 <small id="chat-engine"></small></h3>
+      <div class="quick-chips" id="quick-chips">
+        <button class="chip" data-q="明后两天凌晨会有霜冻吗?">会不会有霜冻?</button>
+        <button class="chip" data-q="要不要盖防霜布?">要不要盖防霜布?</button>
+        <button class="chip" data-q="什么时候可以采摘?">什么时候采摘?</button>
+        <button class="chip" data-q="最近要不要浇水?">要不要浇水?</button>
+      </div>
+      <div id="chat-box" class="chat-box">
+        <div class="chat-msg agent">助手: 您好! 我是梅家坞茶园微气候助手, 可以问我: 会不会有霜冻? 要不要覆盖防霜布? 什么时候可以采摘?</div>
+      </div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" placeholder="例如: 明后两天凌晨会有霜冻吗?" autocomplete="off">
+        <button type="submit">发送</button>
+      </form>
+    </article>
+
+    <!-- API 输出 -->
+    <details>
+      <summary>API 原始输出(/api/forecast)</summary>
+      <pre id="api-json" class="api-json">加载中…</pre>
+    </details>
+  </main>
+  <script src="climate_api.js?v=3"></script>
+  <script src="qpi_resolver.js?v=3"></script>
+  <script src="climate_analysis.js?v=3"></script>
+  <script src="climate_query.js?v=3"></script>
+  <script src="api_connect.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>
