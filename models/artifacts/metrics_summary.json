@@ -1,0 +1,39 @@
+{
+  "model": "lgbm_p50",
+  "target_mode": "direct",
+  "overall_mae_p50": 1.521,
+  "overall_mae_persist": 2.686,
+  "skill_vs_persist": 0.405,
+  "tmin24_accuracy_pm2c": 0.741,
+  "frost": {
+    "standard(P50 阈值)": {
+      "n_events": 120,
+      "n_warnings": 146,
+      "pod": 0.983,
+      "far": 0.192,
+      "csi": 0.797
+    },
+    "conservative(P10 阈值)": {
+      "n_events": 120,
+      "n_warnings": 207,
+      "pod": 1.0,
+      "far": 0.42,
+      "csi": 0.58
+    },
+    "春季窗口(2-4月)": {
+      "n_events": 47,
+      "n_warnings": 56,
+      "pod": 0.957,
+      "far": 0.196,
+      "csi": 0.776
+    }
+  },
+  "heat": {
+    "n_events": 34,
+    "n_warnings": 50,
+    "pod": 0.941,
+    "far": 0.36,
+    "csi": 0.615
+  },
+  "interval_coverage_p10_p90": 0.781
+}

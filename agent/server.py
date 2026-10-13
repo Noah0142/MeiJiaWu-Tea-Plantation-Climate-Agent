@@ -391,10 +391,24 @@ def sensor_remove():
 from agent.site_api import router as site_router
 
 app.include_router(site_router)
+# 确保运行时目录存在(云端全新克隆时 data/ 不入库, 需启动时自建)
+(ROOT / "data" / "sites").mkdir(parents=True, exist_ok=True)
+(ROOT / "data" / "sensor").mkdir(parents=True, exist_ok=True)
 app.mount("/pred", StaticFiles(directory=str(ROOT / "data" / "sites")), name="site-overlays")
 
+
+@app.get("/api/health")
+def api_health():
+    """健康检查(Railway 等平台探活用; 注意必须在静态挂载前注册)。"""
+    return {"ok": True, "service": "meijiawu-climate-agent"}
+
+
+# 静态挂载放在最后: mount("/") 会兜底所有未匹配路径
 app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
+    uvicorn.run(app, host=host, port=port)

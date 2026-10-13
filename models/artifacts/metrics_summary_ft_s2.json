@@ -1,0 +1,32 @@
+{
+  "model": "lgbm_p50",
+  "target_mode": "error",
+  "overall_mae_p50": 0.568,
+  "overall_mae_persist": 2.334,
+  "skill_vs_persist": 0.635,
+  "tmin24_accuracy_pm2c": 1.0,
+  "frost": {
+    "standard(P50 阈值)": {
+      "n_events": 20,
+      "n_warnings": 13,
+      "pod": 0.6,
+      "far": 0.077,
+      "csi": 0.571
+    },
+    "conservative(P10 阈值)": {
+      "n_events": 20,
+      "n_warnings": 27,
+      "pod": 0.9,
+      "far": 0.333,
+      "csi": 0.621
+    }
+  },
+  "heat": {
+    "n_events": 0,
+    "n_warnings": 0,
+    "pod": 0.0,
+    "far": 0.0,
+    "csi": 0.0
+  },
+  "interval_coverage_p10_p90": 0.731
+}
