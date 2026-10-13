@@ -1,0 +1,47 @@
+{
+  "village": {
+    "lon": 120.084,
+    "lat": 30.206,
+    "elev_m": 58.0
+  },
+  "bbox": [
+    120.03,
+    30.16,
+    120.14,
+    30.26
+  ],
+  "grid": {
+    "cols": 396,
+    "rows": 360,
+    "res_m": 30.92
+  },
+  "elevation_m": {
+    "min": -6.0,
+    "max": 417.0,
+    "mean": 72.92414421997755
+  },
+  "slope_deg": {
+    "mean": 11.166357267096197,
+    "max": 50.729123833707916
+  },
+  "flowacc": {
+    "max": 907.0
+  },
+  "srtm_crosscheck": {
+    "mean_abs_m": 11.200004676420837,
+    "rmse_m": 15.617256358066161,
+    "corr": 0.9803875391077567
+  },
+  "outputs": [
+    "aspect.tif",
+    "dem_30m.tif",
+    "diff_nasadem_srtm.tif",
+    "flowacc.tif",
+    "hillshade.tif",
+    "slope.tif",
+    "srtm_61_06_clip.tif",
+    "stats.json",
+    "terrain_preview.png",
+    "tpi_330m.tif"
+  ]
+}
