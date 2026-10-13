@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地图定点查询 · 梅家坞茶园微气候智能体</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="styles/custom_style.css?v=4">
+</head>
+<body class="map-page">
+<header class="map-header">
+  <div class="brand">
+    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="19" stroke="var(--border)" stroke-width="1.5"/>
+      <path d="M20 29 C 14 23, 13 16, 20 10 C 27 16, 26 23, 20 29 Z"
+            stroke="var(--c-primary)" stroke-width="1.8" fill="oklch(0.68 0.13 152 / 0.12)"/>
+      <path d="M20 29 L 20 20 M 20 22 L 13 17 M 20 24 L 27 19"
+            stroke="var(--c-primary)" stroke-width="1.2"/>
+    </svg>
+    <div>
+      <h1>地图定点查询</h1>
+      <span class="sub">点击地图选择茶园位置 → 地形剖面与微气候预测 → AI 解读</span>
+    </div>
+  </div>
+  <span class="live-pill"><span class="dot"></span><span>地形 30m · 叠加层实时渲染</span></span>
+  <a class="theme-toggle" href="/" style="text-decoration:none">返回总览</a>
+  <button class="theme-toggle" id="theme-toggle" aria-label="切换明暗主题">浅色</button>
+</header>
+<main class="map-main">
+  <div id="map"></div>
+  <div id="panel">
+    <section>
+      <h2>① 选择茶园位置</h2>
+      <p class="hint">在地图上<b>点击任意位置</b>放置标记, 也可选常用位置:</p>
+      <div class="chips" id="presets">
+        <span class="chip" data-lat="30.206" data-lon="120.084">梅家坞村址</span>
+        <span class="chip" data-lat="30.228" data-lon="120.090">琅珰岭</span>
+        <span class="chip" data-lat="30.184" data-lon="120.062">云栖竹径</span>
+        <span class="chip" data-lat="30.196" data-lon="120.115">九溪</span>
+      </div>
+      <div id="point-box"></div>
+      <button class="primary" id="btn-run" disabled>② 运行微气候模型</button>
+      <div id="run-status"></div>
+    </section>
+    <section id="sec-result" hidden>
+      <h2>③ 本地微气候预测</h2>
+      <div id="result-box"></div>
+      <div id="chart-72h"></div>
+      <p class="hint" style="margin-top:6px">叠加层 (点周围 <span id="win-size"></span> km 范围):</p>
+      <div class="ov-chips" id="ov-picker">
+        <span class="ov-chip on" data-ov="frost72h">72h霜冻</span>
+        <span class="ov-chip" data-ov="gdd">明前GDD</span>
+        <span class="ov-chip" data-ov="frost6y">6年霜冻</span>
+        <span class="ov-chip" data-ov="dtr">昼夜温差</span>
+        <span class="ov-chip" data-ov="pluck">开采期</span>
+        <span class="ov-chip" data-ov="terrain">地形</span>
+      </div>
+      <input type="range" id="ov-opacity" min="0" max="100" value="75">
+      <p class="note" id="ov-layer-note"></p>
+      <p class="note" id="param-note"></p>
+    </section>
+    <section id="sec-ai" hidden>
+      <h2>④ AI 解读该点位</h2>
+      <button class="primary" id="btn-ai">让 AI 解读这个点位</button>
+      <div id="ai-status" class="run-status"></div>
+      <div id="ai-box" class="chat-box map-ai-box"></div>
+      <form id="ai-form" class="chat-form">
+        <input type="text" id="ai-input" placeholder="追问: 这个位置适合种什么品种?" autocomplete="off">
+        <button type="submit">发送</button>
+      </form>
+    </section>
+  </div>
+</main>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="echarts.min.js?v=3"></script>
+<script src="climate_api.js?v=3"></script>
+<script src="map.js?v=6"></script>
+</body>
+</html>

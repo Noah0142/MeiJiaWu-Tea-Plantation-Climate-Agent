@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pandas as pd
 import yaml
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -105,16 +105,45 @@ KB = """
 """
 
 FORECAST_CACHE = {"ts": 0.0, "data": None}
+CACHE_TTL = 110  # 秒; 前端每 2 分钟刷新, 保持数据实时滚动
 
 
-def get_forecast(force: bool = False) -> dict:
-    if not force and FORECAST_CACHE["data"] and time.time() - FORECAST_CACHE["ts"] < 600:
-        return FORECAST_CACHE["data"]
-    with open(ROOT / "config.yaml", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+def _load_inputs(cfg: dict):
+    """模型输入: Open-Meteo 实时(背景场) + 传感器实测(若有, 互补融合)。
+
+    融合策略: 传感器覆盖时段用实测值锚定, 其余时段气象站兜底;
+    失败回退本地 CSV。返回 (bg, lab, source_label)。
+    """
+    site = cfg.get("site", {})
+    lat, lon = site.get("lat", 30.2272), site.get("lon", 120.1014)
+    from models.live_data import fetch_openmeteo_inputs, load_sensor, merge_sensor_into_inputs
+    sensor = load_sensor()
+    try:
+        bg, lab, meta = fetch_openmeteo_inputs(lat, lon, past_days=6)
+        label = f"Open-Meteo 实时(past {meta['hours']}h, {meta['fetched_at']} 拉取)"
+        if sensor is not None:
+            sdf, smeta = sensor
+            bg, lab, stats = merge_sensor_into_inputs(bg, lab, sdf)
+            label = (f"传感器实测 + Open-Meteo 互补"
+                     f"(实测锚定 {stats['anchored_hours']}h, 气象站兜底 {stats['station_hours']}h)")
+        return bg, lab, label
+    except Exception as e:  # noqa: BLE001
+        print(f"[server] 实时数据获取失败({e}), 回退本地 CSV")
     src = SENSOR_CSV
     source = "open-meteo" if "open-meteo" in Path(src).name else "standard"
     bg, lab = read_inputs(cfg, src, source)
+    if sensor is not None:
+        bg, lab, stats = merge_sensor_into_inputs(bg, lab, sensor[0])
+        return bg, lab, f"传感器实测 + 本地 CSV 互补(实测锚定 {stats['anchored_hours']}h)"
+    return bg, lab, "本地 CSV(离线回退)"
+
+
+def get_forecast(force: bool = False) -> dict:
+    if not force and FORECAST_CACHE["data"] and time.time() - FORECAST_CACHE["ts"] < CACHE_TTL:
+        return FORECAST_CACHE["data"]
+    with open(ROOT / "config.yaml", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    bg, lab, source_label = _load_inputs(cfg)
     fc, t0 = run_forecast(cfg, load_predictor(cfg), bg, lab, hours=72)
 
     hist = lab["obs_t2m"].iloc[-48:]
@@ -137,6 +166,7 @@ def get_forecast(force: bool = False) -> dict:
     data = {
         "site": cfg["site"],
         "issued_at": str(t0),
+        "data_source": source_label,
         "history": [{"time": str(t), "t2m": round(float(v), 1)} for t, v in hist.items()],
         "sensor": sensor,
         "hourly": json.loads(fc.reset_index().to_json(orient="records", date_format="iso")),
@@ -206,11 +236,12 @@ def rule_reply(question: str, data: dict) -> str:
     return forecast_text(data) + " 您可以问我: 会不会有霜冻? 什么时候采摘? 要不要浇水?"
 
 
-def _grounded_prompt(data: dict) -> str:
+def _grounded_prompt(data: dict, context: str | None = None) -> str:
     """把微气候模型的预测结果(逐小时预报 + 风险 + 近期实况)注入系统提示词。
 
     数据表达防呆: 3h 抽样、每格写成 "P50℃(P10~P90)" 避免小模型把分位数读成
     三套不同预报; 并加硬性规则禁止编造数字与自行推断风险。
+    可选 context: 地图点位的地形/微气候信息, 使回答针对该点位。
     """
     hourly = []
     for i, r in enumerate(data["hourly"][:48]):
@@ -224,6 +255,10 @@ def _grounded_prompt(data: dict) -> str:
     risk = {k: {"最低": f"{v['tmin_p50']}℃", "最高": f"{v['tmax_p90']}℃",
                 "霜冻判定": v["frost_note"], "热害判定": v["heat_note"]}
             for k, v in data["risk"]["windows"].items()}
+    ctx_block = ""
+    if context:
+        ctx_block = (f"\n【用户当前查询的地图点位信息(回答必须针对该点位, "
+                     f"同时可引用上面监测点预报作区域背景)】\n{context}\n")
     return KB + f"""
 当前起报时间: {data['issued_at']}(北京时间), 地点: 杭州西湖梅家坞茶园。
 【模型 0-72h 预报(前 48h, 每 3h 一行; 括号内 P10~P90 是可能范围不是另一套预报)】
@@ -231,7 +266,7 @@ def _grounded_prompt(data: dict) -> str:
 【模型 24/48/72h 风险判定(最终结论以此为准)】
 {json.dumps(risk, ensure_ascii=False)}
 【最近 24h 茶园实况(3h 抽样)】
-{json.dumps(hist, ensure_ascii=False)}
+{json.dumps(hist, ensure_ascii=False)}{ctx_block}
 【回答硬性规则】
 1. 先判断用户在问什么(预报/霜冻/高温/采摘/灌溉/其他), 直接回答, 给出具体数字和时段;
 2. 引用的每个数字必须来自上面的数据, 严禁编造或推算不存在的数值;
@@ -240,10 +275,10 @@ def _grounded_prompt(data: dict) -> str:
 5. 2-4 句话, 口语化, 不堆术语; 农事建议要可执行(覆盖/熏烟/遮荫/灌溉时机)。"""
 
 
-def llm_reply(messages: list[dict], data: dict) -> tuple[str | None, str | None]:
+def llm_reply(messages: list[dict], data: dict, context: str | None = None) -> tuple[str | None, str | None]:
     """调用 LLM 生成回答。返回 (文本, 引擎名); 全部失败时返回 (None, None)。"""
     ep = _llm_endpoint()
-    sys_prompt = _grounded_prompt(data)
+    sys_prompt = _grounded_prompt(data, context)
     payload = {"model": ep["model"],
                "messages": [{"role": "system", "content": sys_prompt}] + messages[-10:],
                "temperature": 0.5, "max_tokens": 600}
@@ -283,6 +318,7 @@ app = FastAPI(title="梅家坞茶园微气候 Agent")
 
 class ChatIn(BaseModel):
     messages: list[dict]
+    context: str | None = None  # 可选: 地图点位地形/气候上下文, 注入该轮系统提示词
 
 
 @app.get("/api/forecast")
@@ -303,12 +339,59 @@ def api_summary():
 @app.post("/api/chat")
 def api_chat(inp: ChatIn):
     data = get_forecast()
-    reply, engine = llm_reply(inp.messages, data)
+    reply, engine = llm_reply(inp.messages, data, inp.context)
     if reply is None:
         reply = rule_reply((inp.messages[-1] or {}).get("content", "") if inp.messages else "", data)
         engine = "规则兜底"
     return JSONResponse({"reply": reply, "engine": engine})
 
+
+# ---- 传感器数据接入(与 Open-Meteo 气象站互补) ----
+@app.post("/api/sensor/upload")
+async def sensor_upload(file: UploadFile):
+    """上传茶园传感器 CSV: 解析质控 -> 保存 -> 预报输入自动切换为互补融合。"""
+    from models.live_data import parse_sensor_csv, save_sensor, load_sensor
+    raw = await file.read()
+    if not raw:
+        return JSONResponse({"ok": False, "error": "空文件"}, status_code=400)
+    if len(raw) > 5 * 1024 * 1024:
+        return JSONResponse({"ok": False, "error": "文件过大(>5MB)"}, status_code=400)
+    try:
+        df, meta = parse_sensor_csv(raw)
+    except ValueError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    meta["filename"] = file.filename or "sensor.csv"
+    meta["uploaded_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    save_sensor(raw, meta)
+    FORECAST_CACHE["ts"] = 0  # 立即失效, 下次请求用新数据
+    return JSONResponse({"ok": True, "meta": meta})
+
+
+@app.get("/api/sensor/status")
+def sensor_status():
+    """当前传感器数据状态(未接入 / 已接入详情)。"""
+    from models.live_data import load_sensor
+    sensor = load_sensor()
+    if sensor is None:
+        return JSONResponse({"connected": False})
+    df, meta = sensor
+    return JSONResponse({"connected": True, "meta": meta})
+
+
+@app.delete("/api/sensor")
+def sensor_remove():
+    """移除传感器数据, 预报输入回到纯 Open-Meteo 气象站。"""
+    from models.live_data import clear_sensor
+    clear_sensor()
+    FORECAST_CACHE["ts"] = 0
+    return JSONResponse({"ok": True})
+
+
+# ---- 地图选点微气候路由(agent/site_api.py)+ 叠加层 PNG 静态挂载 ----
+from agent.site_api import router as site_router
+
+app.include_router(site_router)
+app.mount("/pred", StaticFiles(directory=str(ROOT / "data" / "sites")), name="site-overlays")
 
 app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")
 

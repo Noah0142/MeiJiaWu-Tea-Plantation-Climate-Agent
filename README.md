@@ -9,6 +9,7 @@
 ## 功能特性
 
 - **微气候预报模型**:多时效 LightGBM 分位数回归(气温 P10/P50/P90 + 湿度),时效 1/3/6/12/24/48/72 小时,纯历史实况驱动(无需数值预报输入,拿到茶园传感器即可部署)
+- **地图定点查询**:Leaflet 卫星/街道地图任意选点,输出该点 30m 地形剖面(海拔/坡度/坡向/TPI/土地覆盖)、物理降尺度微气候指标(明前 GDD/霜冻小时/昼夜温差/开采期)与 72h 本地化预报,叠加 6 张专题图层;曲线同时叠加**监测点 LightGBM 对照线**,并支持**点位 AI 解读**(复用 /api/chat 注入点位上下文)
 - **严格三段切分**:train 1981–2020 / val 2021–2024 / test 2025–2026,气候态只用训练段、早停只挂验证集、测试集只评一次 —— 防数据污染
 - **风险预警**:春霜冻(日最低温 ≤4℃ 分级)、高温热害(≥35℃)、浙江倒春寒(4 月连续 3 天均温 <11℃),阈值均已核实
 - **LLM 农事问答**:模型逐小时预报全文注入提示词,回答严格基于数据(禁止编造),多供应商降级链(智谱 GLM-4-Flash 免费 → Pollinations 无密钥 → 规则兜底),页面显示当前回答引擎
@@ -44,16 +45,15 @@
 
 ```
 AI4Climate/
-├── agent/                  # Web 服务 + LLM 问答层(密钥在 agent/.env, 模板见 .env.example)
-├── web/static/             # 前端页面(设计系统、图表、对话、API 接入卡)
-├── web/sensor-network/     # 参考项目模板(克隆)
-├── web/garden-skills/      # web-design-engineer 设计技能库(参考)
+├── agent/                  # Web 服务 + LLM 问答层 + 地图选点 API(site_api.py); 密钥在 agent/.env
+├── geosite/                # 地图选点微气候库(30m 地形/土地覆盖/物理降尺度/天气获取)
+├── web/static/             # 前端页面(index.html 大盘 + map.html 地图页, 共用设计系统)
 ├── models/                 # baseline / train_lgbm / evaluate / infer / predict / risk
 ├── features/               # 特征工程 + 数据集构建(严格三段切分)
 ├── scripts/                # prepare_training_data / make_synthetic_data / export_to_js
 ├── training_data/          # 原始数据(ERA5-Land × 6 文件、Open-Meteo 茶园序列、10m 茶园分布图)
-├── data/                   # raw(管线标准输入)/ processed(样本表与预报输出)
-├── docs/                   # training_plan.md / model_report.md / 页面截图
+├── data/                   # raw / processed / terrain(30m DEM) / landcover / microclimate / weather / sites
+├── docs/                   # training_plan.md / model_report.md / 项目文书.md / 产品介绍.md / 页面截图
 └── config.yaml             # 全局配置(路径、列名映射、切分日期、target_mode、超参)
 ```
 
@@ -63,7 +63,8 @@ AI4Climate/
 pip install -r requirements.txt
 
 # ① 启动 Web 仪表盘 + LLM 问答(默认 8000 端口)
-python agent/server.py                    # http://127.0.0.1:8000
+python agent/server.py                    # http://127.0.0.1:8000 (大盘)
+#    地图定点查询: http://127.0.0.1:8000/map.html(与大盘导航互通)
 #    免费 LLM: 把 agent/.env.example 复制为 agent/.env 填入密钥(见文件内三个方案)
 
 # ② 训练管线(数据已在 training_data/, 可一键复现)

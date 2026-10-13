@@ -54,17 +54,13 @@ async function loadForecast() {
 
 function renderCards() {
   const h = FORECAST.hourly;
-  const srcText = window.API_DRIVEN
-    ? "数据源: Open-Meteo API(用户接入)"
-    : "数据源 Open-Meteo 茶园点 · 每 2 分钟刷新";
+  const srcText = `${(FORECAST.data_source || "Open-Meteo").split("(")[0].trim()} · 每 2 分钟刷新`;
   document.getElementById("issued-at").textContent =
-    `预报 ${FORECAST.issued_at.replace("T", " ")} · ${srcText}`;
-  const cur = FORECAST.api_current;  // API 接入时的实时值(current 块)
-  document.getElementById("card-tnow").textContent = (cur?.t2m ?? FORECAST.history.at(-1).t2m) + "℃";
-  document.getElementById("card-tnow-t").textContent = cur
-    ? "Open-Meteo current 实时值"
-    : `实况时间 ${FORECAST.history.at(-1).time.replace("T", " ")}`;
-  document.getElementById("card-rh").textContent = (cur?.rh ?? h[0].rh ?? "—") + "%";
+    `${FORECAST.issued_at.replace("T", " ").slice(0, 16)} 起报 · 数据源 ${srcText}`;
+  document.getElementById("card-tnow").textContent = FORECAST.history.at(-1).t2m + "℃";
+  document.getElementById("card-tnow-t").textContent =
+    `实况时间 ${FORECAST.history.at(-1).time.replace("T", " ")}`;
+  document.getElementById("card-rh").textContent = (h[0].rh ?? "—") + "%";
   const w24 = FORECAST.risk.windows["24h"], w72 = FORECAST.risk.windows["72h"];
   document.getElementById("card-tmin").textContent = w24.tmin_p50 + "℃";
   document.getElementById("card-frost").textContent = "霜冻风险: " + gradeText(w24.frost_grade);

@@ -73,20 +73,34 @@ small { color: var(--text-muted); }
 .site-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
   flex-wrap: wrap;
   padding: 1.25rem 0 0.25rem;
-  margin-bottom: 0.75rem;
 }
 .site-header .brand {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  flex: 1;
-  min-width: 260px;
+  min-width: 0;
 }
-.site-header h1 { margin: 0; }
-.site-header .sub { display: block; font-size: 0.85rem; color: var(--text-muted); }
+.site-header .brand svg { flex-shrink: 0; }
+.site-header h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.site-header .sub { display: block; font-size: 0.83rem; color: var(--text-muted); margin-top: 0.15rem; }
+.header-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.header-actions .theme-toggle { text-decoration: none; display: inline-block; }
+
+/* 数据状态条: 独立一行, 不挤标题 */
+.status-bar { margin: 0.35rem 0 0.25rem; min-width: 0; }
+.status-bar .live-pill { max-width: 100%; min-width: 0; }
+.status-bar #issued-at {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .live-pill {
   display: inline-flex;
   align-items: center;
@@ -97,6 +111,7 @@ small { color: var(--text-muted); }
   background: var(--surface);
   font-size: 0.8rem;
   color: var(--text-muted);
+  max-width: 100%;
 }
 .live-pill .dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -358,3 +373,75 @@ small { color: var(--text-muted); }
   color: var(--text);
   border-color: var(--c-primary-dim);
 }
+
+/* ---------- 地图定点查询页(独立全高布局, 复用设计令牌) ---------- */
+body.map-page { display: flex; flex-direction: column; overflow: hidden; height: 100vh; }
+body.map-page main { min-height: 0; }
+.map-header {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 10px 18px; background: var(--bg); border-bottom: 1px solid var(--border);
+}
+.map-header .brand { display: flex; align-items: center; gap: 0.8rem; flex: 1; min-width: 260px; }
+.map-header h1 { font-size: 17px; margin: 0; }
+.map-header .sub { font-size: 12px; color: var(--text-muted); }
+.map-main { flex: 1; display: flex; min-height: 0; }
+#map { flex: 1; background: var(--bg); min-height: 0; }
+#panel {
+  width: 405px; max-width: 42vw; background: var(--surface);
+  overflow-y: auto; border-left: 1px solid var(--border); padding: 14px;
+}
+.map-main section { margin-bottom: 16px; }
+.map-main section h2 {
+  font-size: 13px; color: var(--c-primary); margin-bottom: 8px;
+  font-weight: 600; letter-spacing: 0.5px; font-family: "Noto Sans SC", sans-serif;
+}
+.map-main .hint { color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+.map-main .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.map-card {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 10px 12px; margin-top: 8px;
+}
+.map-card .k { color: var(--text-muted); font-size: 11px; }
+.map-card .v { font-size: 15px; font-weight: 600; margin-top: 2px; }
+.map-card .v small { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+.map-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.map-grid2 .map-card, .map-grid3 .map-card { margin-top: 0; }
+.map-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.map-main button.primary {
+  width: 100%; margin-top: 10px; padding: 10px;
+  background: var(--c-primary-dim); color: var(--bg); font-weight: 600;
+  border: none; border-radius: 10px; font-size: 14px; cursor: pointer;
+}
+.map-main button.primary:hover { background: var(--c-primary); }
+.map-main button.primary:disabled { background: var(--surface-2); color: var(--text-muted); cursor: wait; }
+#run-status, .run-status {
+  margin-top: 8px; font-size: 12px; color: var(--text-muted); min-height: 16px;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+#run-status .warn, .warn { color: var(--c-amber); }
+#chart-72h { width: 100%; height: 220px; margin-top: 8px; }
+.map-main .ov-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.map-main .ov-chip {
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 3px 10px; font-size: 11px; cursor: pointer;
+  color: var(--text-muted); background: var(--surface-2);
+}
+.map-main .ov-chip.on { border-color: var(--c-primary); color: var(--c-primary); }
+.map-main input[type="range"] { width: 100%; accent-color: var(--c-primary); }
+.map-main .note {
+  margin-top: 8px; font-size: 11px; color: var(--text-muted);
+  line-height: 1.6; border-left: 2px solid var(--border); padding-left: 8px;
+}
+.map-ai-box { height: 220px; }
+/* Leaflet 控件暗色化(仅深色主题) */
+[data-theme="dark"] .leaflet-bar a,
+[data-theme="dark"] .leaflet-control-layers,
+[data-theme="dark"] .leaflet-control-zoom a {
+  background: var(--surface-2); color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+[data-theme="dark"] .leaflet-control-layers { color: var(--text); }
+[data-theme="dark"] .leaflet-control-attribution {
+  background: rgba(13, 19, 32, 0.75) !important; color: var(--text-muted);
+}
+[data-theme="dark"] .leaflet-control-attribution a { color: var(--text-muted); }

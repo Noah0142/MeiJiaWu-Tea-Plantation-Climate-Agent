@@ -23,10 +23,12 @@ const CHART_PALETTE = {
   dark: {
     primary: "#51af6f", primaryDim: "#22683b", text: "#ebe8dc", muted: "#a19e94",
     grid: "#354039", band: "rgba(81,175,111,0.13)", area: "rgba(81,175,111,0.15)",
+    ref: "#58a6ff", danger: "#f85149",
   },
   light: {
     primary: "#267543", primaryDim: "#5a966b", text: "#132419", muted: "#536257",
     grid: "#d9e0db", band: "rgba(38,117,67,0.12)", area: "rgba(38,117,67,0.12)",
+    ref: "#2f6fd0", danger: "#d1242f",
   },
 };
 
