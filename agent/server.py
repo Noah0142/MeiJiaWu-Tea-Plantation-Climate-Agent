@@ -388,19 +388,27 @@ def sensor_remove():
 
 
 # ---- 地图选点微气候路由(agent/site_api.py)+ 叠加层 PNG 静态挂载 ----
-from agent.site_api import router as site_router
+# 降级保护: 地图模块依赖 rasterio/GDAL 等系统库, 个别部署环境若缺库,
+# 仅禁用地图接口, 大盘/预报/传感器/助手不受影响(启动不再整体崩溃)。
+try:
+    from agent.site_api import router as site_router
 
-app.include_router(site_router)
-# 确保运行时目录存在(云端全新克隆时 data/ 不入库, 需启动时自建)
-(ROOT / "data" / "sites").mkdir(parents=True, exist_ok=True)
+    app.include_router(site_router)
+    (ROOT / "data" / "sites").mkdir(parents=True, exist_ok=True)
+    app.mount("/pred", StaticFiles(directory=str(ROOT / "data" / "sites")), name="site-overlays")
+    _SITE_OK = True
+except Exception as _e:  # noqa: BLE001
+    _SITE_OK = False
+    print(f"[server] 地图选点功能不可用(大盘与预报不受影响): {_e}")
+
+# 传感器/上传目录(运行时需要, 云端全新克隆时自建)
 (ROOT / "data" / "sensor").mkdir(parents=True, exist_ok=True)
-app.mount("/pred", StaticFiles(directory=str(ROOT / "data" / "sites")), name="site-overlays")
 
 
 @app.get("/api/health")
 def api_health():
     """健康检查(Railway 等平台探活用; 注意必须在静态挂载前注册)。"""
-    return {"ok": True, "service": "meijiawu-climate-agent"}
+    return {"ok": True, "service": "meijiawu-climate-agent", "map_feature": _SITE_OK}
 
 
 # 静态挂载放在最后: mount("/") 会兜底所有未匹配路径

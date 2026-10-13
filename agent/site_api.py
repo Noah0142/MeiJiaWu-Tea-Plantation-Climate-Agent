@@ -50,7 +50,9 @@ def _render_overlay(arr, bounds, out_path, cmap_name, title="", vmin=None,
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "sans-serif"]
+    # 中文字体: Windows(雅黑/黑体) → Linux 云端(文泉驿, Dockerfile 已安装) → 兜底
+    plt.rcParams["font.sans-serif"] = [
+        "Microsoft YaHei", "SimHei", "WenQuanYi Zen Hei", "Noto Sans CJK SC", "sans-serif"]
     plt.rcParams["axes.unicode_minus"] = False
 
     arr = np.asarray(arr, dtype=np.float64)

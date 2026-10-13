@@ -40,6 +40,24 @@
       <span class="live-pill"><span class="dot"></span><span id="issued-at">数据加载中…</span></span>
     </div>
 
+    <!-- 对话对话框(农事助手, 置顶) -->
+    <article class="panel">
+      <h3>和农事助手继续聊 <small id="chat-engine"></small></h3>
+      <div class="quick-chips" id="quick-chips">
+        <button class="chip" data-q="明后两天凌晨会有霜冻吗?">会不会有霜冻?</button>
+        <button class="chip" data-q="要不要盖防霜布?">要不要盖防霜布?</button>
+        <button class="chip" data-q="什么时候可以采摘?">什么时候采摘?</button>
+        <button class="chip" data-q="最近要不要浇水?">要不要浇水?</button>
+      </div>
+      <div id="chat-box" class="chat-box">
+        <div class="chat-msg agent">助手: 您好! 我是梅家坞茶园微气候助手, 可以问我: 会不会有霜冻? 要不要覆盖防霜布? 什么时候可以采摘?</div>
+      </div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" placeholder="例如: 明后两天凌晨会有霜冻吗?" autocomplete="off">
+        <button type="submit">发送</button>
+      </form>
+    </article>
+
     <!-- 实时卡片 -->
     <div class="grid">
       <div class="metric-card"><article>
@@ -150,24 +168,6 @@
           其余时段由 Open-Meteo 气象站<b>背景场兜底</b>, 两者互补驱动预报。
         </p>
       </details>
-    </article>
-
-    <!-- 对话对话框 -->
-    <article class="panel">
-      <h3>和农事助手继续聊 <small id="chat-engine"></small></h3>
-      <div class="quick-chips" id="quick-chips">
-        <button class="chip" data-q="明后两天凌晨会有霜冻吗?">会不会有霜冻?</button>
-        <button class="chip" data-q="要不要盖防霜布?">要不要盖防霜布?</button>
-        <button class="chip" data-q="什么时候可以采摘?">什么时候采摘?</button>
-        <button class="chip" data-q="最近要不要浇水?">要不要浇水?</button>
-      </div>
-      <div id="chat-box" class="chat-box">
-        <div class="chat-msg agent">助手: 您好! 我是梅家坞茶园微气候助手, 可以问我: 会不会有霜冻? 要不要覆盖防霜布? 什么时候可以采摘?</div>
-      </div>
-      <form id="chat-form" class="chat-form">
-        <input type="text" id="chat-input" placeholder="例如: 明后两天凌晨会有霜冻吗?" autocomplete="off">
-        <button type="submit">发送</button>
-      </form>
     </article>
 
     <!-- API 输出 -->

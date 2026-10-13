@@ -1,0 +1,22 @@
+# Docker 构建上下文排除(不入镜像): 训练大数据与本地环境
+.git
+.zcode
+.venv
+venv
+__pycache__
+**/__pycache__
+
+# 训练用大数据(云端不需要; 运行必需的小数据不在此列)
+training_data/ERA5
+training_data/Teamap_2022_China.tif
+data/processed
+data/raw/background.csv
+data/raw/labels.csv
+data/synthetic
+data/sites
+data/sensor
+
+# 参考仓库与前端导出产物
+web/garden-skills
+web/sensor-network
+web/models
