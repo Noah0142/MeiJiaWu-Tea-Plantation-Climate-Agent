@@ -82,6 +82,26 @@ python models/predict.py --source open-meteo --obs training_data/open-meteo-30.1
 python scripts/make_synthetic_data.py && python features/build_dataset.py --config scripts/smoke_config.yaml
 ```
 
+## 部署到 Railway(云端)
+
+仓库已内置云端部署配置, 在 Railway 里把本仓库连上即可, 无需额外设置:
+
+| 文件 | 作用 |
+|---|---|
+| `main.py` | 云端启动入口(暴露 `agent.server` 的 FastAPI app) |
+| `railway.json` / `Procfile` | 启动命令 `uvicorn main:app --host 0.0.0.0 --port $PORT` + 健康检查 `/api/health` |
+| `.python-version` | 固定 Python 3.12 |
+| `models/artifacts/*.joblib`、`data/terrain`、`data/landcover`、`data/microclimate`、`data/weather` | 预报与地图功能必需的小数据, 已随仓库入库(训练用大数据仍不入库) |
+
+可选环境变量(在 Railway 服务的 Variables 里设置):
+
+- `LLM_PROVIDER=zhipu` + `LLM_API_KEY=...` —— 农事问答走智谱 GLM-4-Flash(推荐);
+  不设置时自动走免费无密钥通道(Pollinations), 再兜底规则回答, 页面不会断答。
+- 运行时自动从 Open-Meteo 拉取实时数据, 无需其他密钥。
+
+注意: 云端实例(如 Railway 免费计划)重启后本地上传的传感器数据会清空(容器文件系统不持久), 属预期行为;
+如需持久化可挂载 Railway Volume 到 `data/sensor`。
+
 ## 数据
 
 - **ERA5-Land 单格点(30.20°N, 120.10°E)1950–2026 逐小时 × 67.3 万条**:2m 气温/露点、降水、短波辐射、皮肤温度、4 层土壤温度、4 层土壤湿度(Copernicus CDS 下载)
