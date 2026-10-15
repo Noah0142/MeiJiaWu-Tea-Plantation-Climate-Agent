@@ -1,0 +1,27 @@
+{
+ "lat": 30.215,
+ "lon": 120.095,
+ "mc": {
+  "gdd_spring": 152.9,
+  "frost_hours_6yr": 534.0,
+  "dtr_spring": 9.8,
+  "first_pluck_doy": 86.0,
+  "windows": "GDD 1/1-4/5 多年平均; 霜冻 2/1-4/5 2021-2026合计; DTR 3/1-4/5 多年平均",
+  "params_note": "气温递减率 0.0065°C/m、GDD基温10°C、受冻临界2°C、冷池系数1.5 为占位参数, 需实测校准"
+ },
+ "terrain": {
+  "elevation_m": 297.0,
+  "slope_deg": 22.6,
+  "aspect_deg": 98.9,
+  "tpi_m": 1.0,
+  "flowacc": 4.0
+ },
+ "f": {
+  "issued_at": "2026-10-15T00:00",
+  "min_72h": 15.6,
+  "max_72h": 28.2,
+  "frost_hours_next72h": 0.0,
+  "frost_grade": 0,
+  "frost_note": "未来 72h 无霜冻风险"
+ }
+}

@@ -1,0 +1,32 @@
+{
+ "name": "meijiawu-night",
+ "from": "产品自身的深色令牌(web/static/styles/custom_style.css)与深色截图",
+ "mood": "the product's own dark theme: pine ground, tea-green accent, warm paper light",
+ "color": {
+  "ground": "#060e09",
+  "deep": "#040906",
+  "card": "#101a13",
+  "line": "#223028",
+  "mute": "#a19e94",
+  "ink": "#ebe8dc",
+  "accent": "#51af6f",
+  "accent2": "#e7b551"
+ },
+ "type": {
+  "display": {
+   "face": "Instrument Serif",
+   "weight": 400,
+   "tracking": -0.01
+  },
+  "text": {
+   "face": "Inter",
+   "weight": 500,
+   "tracking": -0.02
+  },
+  "mono": {
+   "face": "Geist Mono",
+   "weight": 400,
+   "tracking": 0
+  }
+ }
+}

@@ -46,3 +46,13 @@ Thumbs.db
 docs/promo/film/_frames/
 docs/promo/film/frame_*.png
 docs/promo/film/mp4_*.jpg
+
+# 影片二: 旁白片段与混音中间产物(可由 narrate.py / score2.py / final_mix.py 重建), 成片入库
+docs/promo/film2/assets/narr/
+docs/promo/film2/bed.wav
+docs/promo/film2/sfx2.wav
+docs/promo/film2/draft2.mp4
+docs/promo/film2/s2_*.png
+docs/promo/film2/check*.png
+docs/promo/film2/assets/shots/
+docs/promo/film2/_frames/
