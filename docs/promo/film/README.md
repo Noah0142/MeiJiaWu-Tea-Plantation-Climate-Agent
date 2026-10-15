@@ -5,16 +5,20 @@
 每帧按 `__motion` 自适应的真实快门运动模糊。
 
 ```bash
-# 可复现(Windows, 需先把 ffmpeg/ffprobe 放进 PATH, 见 .tools/)
-python capture.py                         # 抓网页版真实截图 + 元素坐标(需后端在 127.0.0.1:8000)
-python extract_line.py                    # DEM 横断面 + 真实 72h P50/P10/P90
-python make_cjk_css.py                    # 中文字体子集(Noto Serif/Sans SC, OFL)
-python ../.../look.py apply look.json comp.html      # look.js(配色 + 拉丁字面内联)
-python score.py                           # sfx.wav
-python .../probe.py comp.html             # 自检: 承接/曲线
-python .../stills.py comp.html --times ... --out stills.png
-python .../render.py comp.html --out draft.mp4 --sfx sfx.wav
-python .../verify_promo.py draft.mp4 --comp comp.html --shots 0,1.5,2.7,5.5,7.0,8.6,11.5,13.3,15.2,17.4
+# 可复现(Windows): ffmpeg/ffprobe 见仓库 .tools/(已 gitignore), onetake 脚本在 $ONETAKE(默认下面路径)
+cd docs/promo/film
+export PATH="/c/Hackthon/AI4Climate/.tools:$PATH"
+ONETAKE="${ONETAKE_DIR:-$TEMP/onetake}"          # git clone https://github.com/feitangyuan/onetake
+
+python capture.py                                # 抓网页版真实截图 + 元素坐标(需后端在 127.0.0.1:8000)
+python extract_line.py                           # DEM 横断面 + 真实 72h P50/P10/P90
+python make_cjk_css.py                           # 中文字体子集(Noto Serif/Sans SC, OFL)
+python "$ONETAKE/scripts/look.py" apply look.json comp.html     # look.js(配色 + 拉丁字面内联)
+python score.py                                  # sfx.wav
+python "$ONETAKE/scripts/probe.py" comp.html     # 自检: 承接/曲线
+python "$ONETAKE/scripts/stills.py" comp.html --times 0.9,2.1,3.4,4.6,6.1,7.5,9.3,12,14.8,16.4,17.2 --out stills.png
+python "$ONETAKE/scripts/render.py" comp.html --out draft.mp4 --sfx sfx.wav
+python "$ONETAKE/scripts/verify_promo.py" draft.mp4 --comp comp.html --shots 0,1.5,2.7,5.5,7.0,8.6,11.5,13.3,15.2,17.4
 ```
 
 ## 一、概念:三个,选一个(SKILL §2 硬规则)
