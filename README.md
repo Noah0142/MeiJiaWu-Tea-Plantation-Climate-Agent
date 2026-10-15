@@ -54,9 +54,21 @@ AI4Climate/
 ├── scripts/                # prepare_training_data / make_synthetic_data / export_to_js
 ├── training_data/          # 原始数据(ERA5-Land × 6 文件、Open-Meteo 茶园序列、10m 茶园分布图)
 ├── data/                   # raw / processed / terrain(30m DEM) / landcover / microclimate / weather / sites
-├── docs/                   # 训练/模型/文书文档; docs/miniapp/ 小程序设计系统与部署教程
+├── docs/                   # 训练/模型/文书文档; docs/miniapp/ 小程序设计系统与部署教程; docs/promo/ 宣传片
+│   └── promo/film/         # 产品宣传片(onetake 合成): comp.html + draft.mp4 + 真实素材与自检
 └── config.yaml             # 全局配置(路径、列名映射、切分日期、target_mode、超参)
 ```
+
+## 产品宣传片
+
+`docs/promo/film/` 是用 [onetake](https://github.com/feitangyuan/onetake) 做的 17.4 秒产品宣传片
+([draft.mp4](docs/promo/film/draft.mp4),1080p30,带真实快门运动模糊)。
+
+- 概念「一条线」: 山脊剖面(DEM 真实横断面)→ 气温曲线(真实 72h P50)→ P10–P90 区间 → 2℃ 受冻临界 →
+  真实网页版里的同一张图(实拍截图 + 真实 GLM-4-Flash 问答)→ 真实地形图上的同一条线 → 落版下划线;
+- 全部数字有出处(见 [docs/promo/film/README.md](docs/promo/film/README.md)),验收 oracle 全过
+  (`verify.txt`: cadence/rest/continuity 1.00/curves/audio 全 PASS);
+- 重跑: `python docs/promo/film/capture.py`(抓网页素材)→ `extract_line.py` → `score.py` → `render.py`。
 
 ## 微信小程序
 

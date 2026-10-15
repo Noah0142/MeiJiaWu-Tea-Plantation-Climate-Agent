@@ -34,6 +34,41 @@
   border-radius: 999rpx;
 }
 
+/* 底图切换: 地形图 / 卫星图 / 街道图 */
+.base-switch {
+  position: absolute;
+  left: 24rpx;
+  bottom: 24rpx;
+  display: flex;
+  background: var(--surface);
+  border: 1rpx solid var(--border);
+  border-radius: 999rpx;
+  padding: 4rpx;
+}
+.base-chip {
+  font-size: 22rpx;
+  color: var(--muted);
+  padding: 8rpx 22rpx;
+  border-radius: 999rpx;
+}
+.base-chip.on {
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 600;
+}
+.base-note {
+  position: absolute;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 96rpx;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 20rpx;
+  line-height: 1.6;
+  padding: 10rpx 18rpx;
+  border-radius: 14rpx;
+}
+
 .map-body {
   flex: 1;
   min-height: 0;

@@ -4,12 +4,11 @@
     <map
       id="teaMap"
       class="map"
-      layer-style="{{mapLayerStyle}}"
       latitude="{{centerLat}}"
       longitude="{{centerLon}}"
       scale="{{scale}}"
       markers="{{marker ? [{id:1, latitude: marker.latitude, longitude: marker.longitude, width: 30, height: 36}] : []}}"
-      ground-overlays="{{allOverlays}}"
+      enable-satellite="{{satellite}}"
       bindtap="onMapTap"
       bindready="onMapReady"
       show-location="{{false}}"
@@ -17,6 +16,17 @@
       enable-scroll
     ></map>
     <view class="map-hint">点击地图选择茶园位置</view>
+    <!-- 底图切换: 地形图(默认) / 卫星影像 / 街道 -->
+    <view class="base-switch">
+      <text
+        wx:for="{{bases}}"
+        wx:key="key"
+        class="base-chip {{base === item.key ? 'on' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onBase"
+      >{{item.label}}</text>
+    </view>
+    <view wx:if="{{baseNote}}" class="base-note">{{baseNote}}</view>
     <view wx:if="{{overlays.length}}" class="overlay-toggle" bindtap="toggleOverlay">
       {{overlayOn ? "关闭叠加层" : "显示叠加层"}}
     </view>

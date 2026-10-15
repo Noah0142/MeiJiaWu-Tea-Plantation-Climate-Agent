@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!-- onetake · © 2026 Patrick (github.com/feitangyuan) · PolyForm Noncommercial 1.0.0 · lineage otk-7f3e1c -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>onetake · 梅家坞茶园微气候智能体</title>
+<link rel="stylesheet" href="cjk.css">
+<style>
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--ground,#f8f7f1)}
+body{font-family:var(--text,Inter,system-ui,sans-serif)}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--ground,#f8f7f1)}
+#world{position:absolute;inset:0;will-change:transform}
+.abs{position:absolute;left:0;top:0;will-change:transform,opacity}
+canvas{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#cv{z-index:1}
+#win{position:absolute;left:0;top:0;overflow:hidden;background:var(--card,#fff);border-radius:16px;z-index:3;
+  box-shadow:0 40px 100px -34px rgba(20,30,20,.42),0 0 0 1px rgba(0,0,0,.05);transform-origin:0 0;will-change:transform,opacity}
+#win .bar{position:absolute;left:0;right:0;top:0;height:44px;background:#f1f0ea;border-bottom:1px solid #e2e6e0;opacity:0}
+#win .bar i{position:absolute;top:16px;width:11px;height:11px;border-radius:50%;background:#d9d9d2}
+#win .bar .url{position:absolute;left:50%;top:11px;transform:translateX(-50%);height:22px;padding:0 16px;border-radius:6px;
+  background:#fff;font-family:var(--mono,monospace);font-size:13.5px;color:var(--mute,#8f8f8b);line-height:22px;white-space:nowrap}
+#winbody{position:absolute;left:0;right:0;top:44px;bottom:0;overflow:hidden}
+#winimg{display:block;transform-origin:0 0;will-change:transform}
+#mapcard{position:absolute;overflow:hidden;border-radius:16px;z-index:3;background:#e9e7dd;opacity:0;
+  box-shadow:0 40px 100px -34px rgba(20,30,20,.42),0 0 0 1px rgba(0,0,0,.05);will-change:transform,opacity}
+#mapimg{display:block;width:100%;height:100%}
+.dot{position:absolute;left:0;top:0;width:19px;height:19px;border-radius:50%;background:#c92f33;border:4px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);will-change:transform,opacity;transform-origin:50% 50%}
+.dlabel{position:absolute;left:0;top:0;white-space:nowrap;background:rgba(6,14,9,.86);color:#f2f5f0;font-size:19px;
+  padding:9px 13px;border-radius:9px;line-height:1;font-family:var(--text,sans-serif),'SansSC',sans-serif;will-change:transform,opacity}
+.words{font-size:46px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;color:var(--ink,#161616);font-family:var(--display,serif),'SansSC',sans-serif}
+.words span{display:inline-block;margin-right:.18em;will-change:transform,opacity}
+.words .mut{color:var(--mute,#8f8f8b);font-weight:500}
+.words.big{font-size:52px}
+#w1,#w2,#w3{left:250px;top:186px}
+#w4{left:110px;top:200px}
+.mono{font-family:var(--mono,monospace),'SansSC','Microsoft YaHei',monospace;font-size:25px;color:var(--mute,#8f8f8b);white-space:nowrap;letter-spacing:.01em;opacity:0}
+#m1{left:132px;top:58px}
+#m2{left:132px;top:58px}
+#m3{left:132px;top:58px}
+#mband{left:300px;top:545px}
+#m4{left:110px;top:268px}
+#chip{white-space:nowrap;background:#e7f1e9;color:#22683b;border:1px solid #cbe3d2;font-size:24px;font-weight:600;font-family:var(--text,sans-serif),'SansSC',sans-serif;
+  padding:12px 22px;border-radius:999px;opacity:0;transform-origin:0 0;will-change:transform,opacity}
+#dark{position:absolute;inset:0;background:#060e09;opacity:0;z-index:4;pointer-events:none}
+#cvTop{z-index:5}
+#wordmark{position:absolute;left:0;top:583px;width:1920px;text-align:center;z-index:6;pointer-events:none;white-space:nowrap}
+#wordmark span{display:inline-block;font-family:'SerifSC',var(--display,serif);font-size:104px;font-weight:600;
+  color:#f2f5f0;letter-spacing:.01em;opacity:0;transform-origin:50% 88%;will-change:transform,opacity}
+#tag1,#tag2{position:absolute;left:0;width:1920px;text-align:center;z-index:6;font-family:var(--mono,monospace),'SansSC','Microsoft YaHei',monospace;
+  color:#9fb3a5;font-size:23px;letter-spacing:.02em;white-space:nowrap;opacity:0;will-change:transform,opacity}
+#tag1{top:762px}
+#tag2{top:800px}
+#cursor{position:absolute;left:0;top:0;width:30px;height:40px;z-index:7;opacity:0;will-change:transform,opacity;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.3))}
+#hud{position:absolute;right:14px;bottom:10px;font:13px monospace;color:#c00;display:none;z-index:9}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <canvas id="cv" width="3840" height="2160"></canvas>
+    <div id="win" class="abs">
+      <div class="bar"><i style="left:16px"></i><i style="left:35px"></i><i style="left:54px"></i>
+        <div class="url">localhost:8000 · 梅家坞茶园微气候智能体</div></div>
+      <div id="winbody"><img id="winimg" src="assets/shots/dash_full.png" alt=""></div>
+    </div>
+    <div id="mapcard" class="abs">
+      <img id="mapimg" src="assets/terrain_card.png" alt="">
+      <div class="dot" id="dotA"></div><div class="dot" id="dotB"></div>
+      <div class="dlabel" id="labA">云栖竹径 · 3/27 开采</div>
+      <div class="dlabel" id="labB">梅家坞北坡 · 4/3 开采</div>
+    </div>
+    <div id="w1" class="words abs"><span>梅家坞</span><span class="mut">一垄茶山</span></div>
+    <div id="w2" class="words abs"><span>未来 72 小时</span><span class="mut">逐小时预报</span></div>
+    <div id="w3" class="words abs"><span>不是一条线</span><span class="mut">是一个区间</span></div>
+    <div id="w4" class="words big abs"><span>同一片山</span><span class="mut">两处茶园</span></div>
+    <div id="mband" class="mono abs">P10 – P90 · 80% 置信区间</div>
+    <div id="m1" class="mono abs">同一个页面 · 实时数据</div>
+    <div id="m2" class="mono abs">农户问,助手答 · 回复用的是上面那条线的数据</div>
+    <div id="m3" class="mono abs">模型输出 · 72h 逐小时 P50 与 P10–P90 区间</div>
+    <div id="m4" class="mono abs">开采期差 7 天 · 春季霜冻小时差 526 小时(6 年累计)</div>
+    <div id="chip" class="abs">未来 72h · 无霜冻风险</div>
+  </div>
+  <div id="dark"></div>
+  <canvas id="cvTop" width="3840" height="2160"></canvas>
+  <div id="wordmark"></div>
+  <div id="tag1">ERA5-Land 再分析 · 全国茶园地图 2022 · Open-Meteo 实时</div>
+  <div id="tag2">LightGBM 分位数回归 · 30m 微地形降尺度 · AI4Climate</div>
+  <svg id="cursor" viewBox="0 0 34 44"><path d="M4 3 L30 22 L18 24 L26 40 L20 43 L12 27 L4 36 Z" fill="#111" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  <div id="hud"></div>
+</div>
+<script src="motion.js"></script>
+<script src="look.js"></script>
+<script src="assets/data.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// onetake comp · 梅家坞茶园微气候智能体 · 17.4s
+// 概念「一条线」: 山脊剖面(真实 DEM 横断面) → 气温曲线(真实 72h P50) → 区间(真实 P10–P90) →
+//   受冻临界线 → 真实页面里同一张图(实拍截图) → 真实地形图上同一条线 → 落版下划线。
+//   笔尖是每一次变化的"因"; 一切数值都是 t 的纯函数, 动效取自 lib/motion.js (window.OM)。
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+const FPS = 30, DUR = 17.4;
+window.__meta = { dur: DUR, fps: FPS, w: 1920, h: 1080 };
+
+// ────────────────────────────────── 时间轴(秒) ──────────────────────────────────
+const T = {
+  draw0: 0.42, draw1: 1.42,                 // S1 笔尖落下, 画出山脊剖面
+  morph0: 1.62, morph1: 2.52,               // S2 剖面 → 气温曲线
+  axis: 2.40,                               //     坐标轴出现
+  band0: 2.82, bandGrow: 0.55, bandClip1: 4.02,   // S3 区间从线上长出来
+  tape0: 5.52, tape1: 5.72,                 // S4 受冻临界线射入
+  chipIn: 5.95,                             //     风险胶囊
+  win0: 7.05, win1: 7.85,                   // S5 胶囊 → 浏览器窗口
+  lineOut0: 7.60, lineOut1: 8.15,           //     手绘线退场
+  curIn: 8.70, click: 9.08,                 // S6 指针 → 快捷问题
+  swap0: 9.45, swap1: 9.72,                 //     切到真实回答(问题 + 回复)
+  pan0: 11.55, pan1: 12.40,                 // S7 窗口内下滚到真实预报图
+  shrink0: 13.42, shrink1: 14.10,           // S8a 窗口 → 左卡片
+  mapIn: 13.88, mapRise: 0.55,              //     地图卡片进场
+  dotA: 14.30, dotB: 14.42, labA: 14.52, labB: 14.64,
+  cardLine0: 14.48, cardLine1: 15.06,       //     同一条线画在地形图上
+  dark0: 15.18, dark1: 15.62,               // S8b 落版
+  fold0: 15.18, fold1: 15.78,               //     卡片退场
+  under0: 15.26, under1: 15.60,             //     线落到下划线(带速度穿过折场)
+  letters: 15.82, tag: 16.36
+};
+const SHOTS = [0, 1.5, 2.7, 5.5, 7.0, 8.6, 11.5, 13.3, 15.2, DUR];   // 分镜边界(--shots 用)
+
+// ────────────────────────────────── 画布与调色 ──────────────────────────────────
+const $ = id => document.getElementById(id);
+const DPR = 2;
+const ctx = $('cv').getContext('2d'), ctxT = $('cvTop').getContext('2d');
+const PAL = (window.LOOK && LOOK.color) || { ground: '#f8f7f1', deep: '#e6e4da', card: '#ffffff', line: '#dcdcd4',
+  mute: '#8f8f8b', ink: '#161616', accent: '#267543', accent2: '#b47825' };
+const danger = '#c92f33';
+const LINE_C = '#51af6f';                       // 折场上那条线的身份色(与真实图表同色)
+const F = (role, px, w) => (window.LOOK ? LOOK.font(role, px, w) : `${w || 500} ${px}px ${role}`);
+const monoF = px => F('mono', px) + ", 'SansSC', 'Microsoft YaHei', sans-serif";
+const { clamp, lerp, sstep, ssstep, seg } = OM;
+const easeMorph = OM.ease.cubicInOut, easeDraw = OM.ease.cubicOut, easeTape = OM.ease.expoOut;
+function hexA(hex, a) {
+  const h = hex.replace('#', '');
+  const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  return `rgba(${parseInt(n.slice(0, 2), 16)},${parseInt(n.slice(2, 4), 16)},${parseInt(n.slice(4, 6), 16)},${a})`;
+}
+
+// ────────────────────────────────── 真实数据 → 几何 ──────────────────────────────────
+const D = window.LINE;
+const N = D.prof.length, X0 = 250, X1 = 1770;
+const T_LO = 2, T_HI = 26, PLOT_TOP = 300, PLOT_BOT = 640;      // ℃ 轴(含 2℃ 临界线)
+const TERR_BASE = 762, TERR_H = 150, PROF_MAX = 250;            // 剖面画在山脚
+const TERR_BASE_GHOST = 900, TERR_H_GHOST = 120;                // 曲线上线后, 山沉为水印
+const xAt = i => X0 + i / (N - 1) * (X1 - X0);
+const yT = v => PLOT_BOT - (v - T_LO) / (T_HI - T_LO) * (PLOT_BOT - PLOT_TOP);
+const yTerAt = (m, kM) => lerp(TERR_BASE, TERR_BASE_GHOST, kM) - clamp(m / PROF_MAX, 0, 1) * lerp(TERR_H, TERR_H_GHOST, kM);
+const yTer = m => yTerAt(m, 0);
+const YTH = yT(2);
+const M50 = D.t50, MLO = D.t10, MHI = D.t90;
+// 真实地形横断面端点(与 extract_line.py 的 DEM 采样一致): A 西北山 → B 东南谷
+const LON_A = 120.045, LAT_A = 30.250, LON_B = 120.130, LAT_B = 30.175;
+const BBOX = [120.03, 30.16, 120.14, 30.26];
+const MC = { x: 990, y: 350, w: 800, h: 494 }, MC_IMG = { w: 2376, crop0: 346, cropH: 1467 };
+const mapPt = (lon, lat) => [
+  MC.x + (lon - BBOX[0]) / (BBOX[2] - BBOX[0]) * MC.w,
+  MC.y + ((1 - (lat - BBOX[1]) / (BBOX[3] - BBOX[1])) * MC_IMG.w - MC_IMG.crop0) / MC_IMG.cropH * MC.h];
+const WIN = { x: 160, y: 118, w: 1600, h: 944, bar: 44 };
+const WIN_SMALL = { x: 110, y: 350, w: 800, h: 494 };
+const wK = h => (h - WIN.bar) / 1080;
+
+// ────────────────────────────────── 线的几何 ──────────────────────────────────
+const frontDraw = t => X0 + easeDraw(seg(t, T.draw0, T.draw1)) * (X1 - X0);
+const frontBand = t => X0 + easeDraw(seg(t, T.band0 + 0.15, T.bandClip1)) * (X1 - X0);
+const frontTape = t => X0 + easeTape(seg(t, T.tape0, T.tape1)) * (X1 - X0);
+const yLine = (i, t) => lerp(yTer(D.prof[i]), yT(M50[i]), easeMorph(seg(t, T.morph0, T.morph1)));
+const kBand = t => easeDraw(seg(t, T.band0, T.band0 + T.bandGrow));
+function poly(ctx2, ys) { ctx2.beginPath(); ctx2.moveTo(xAt(0), ys(0)); for (let i = 1; i < N; i++) ctx2.lineTo(xAt(i), ys(i)); }
+
+// 笔尖位置(nibPos) —— 画剖面 → 随曲线上抬 → 第二遍扫区间 → 停在末端
+function nibPos(t) {
+  if (t >= T.draw0 - 0.06 && t < T.morph0) {
+    const f = frontDraw(t), i = clamp((f - X0) / (X1 - X0), 0, 1) * (N - 1), i0 = Math.floor(i), fr = i - i0;
+    return [f, lerp(yTer(D.prof[i0]), yTer(D.prof[Math.min(i0 + 1, N - 1)]), fr)];
+  }
+  if (t >= T.morph0 && t < T.band0 + 0.12) return [X1, yLine(N - 1, t)];
+  if (t >= T.band0 + 0.12 && t < T.bandClip1) {
+    const f = frontBand(t), i = clamp((f - X0) / (X1 - X0), 0, 1) * (N - 1), i0 = Math.floor(i), fr = i - i0;
+    return [f, lerp(yLine(i0, t), yLine(Math.min(i0 + 1, N - 1), t), fr)];
+  }
+  if (t >= T.bandClip1 && t < T.tape0 - 0.05) return [X1, yLine(N - 1, t)];
+  return null;
+}
+
+// ────────────────────────────────── 画: 主画布(线稿) ──────────────────────────────────
+function drawLineArt(t) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, 1920, 1080);
+  const o = 1 - ssstep(T.lineOut0, T.lineOut1, t);
+  if (o <= 0.001) return;
+  const kM = easeMorph(seg(t, T.morph0, T.morph1));
+  ctx.save(); ctx.globalAlpha = o;
+
+  // 山体剪影: 曲线成形后"沉"成水印(仍有形, 但不再像数据)
+  { const a = lerp(0.13, 0.06, kM);
+    poly(ctx, i => yTerAt(D.prof[i], kM));
+    ctx.lineTo(X1, 1080); ctx.lineTo(X0, 1080); ctx.closePath();
+    const g = ctx.createLinearGradient(0, yTerAt(0, kM) - TERR_H, 0, 1080);
+    g.addColorStop(0, hexA(PAL.accent, a)); g.addColorStop(1, hexA(PAL.accent, 0));
+    ctx.fillStyle = g; ctx.fill();
+    poly(ctx, i => yTerAt(D.prof[i], kM));
+    ctx.lineWidth = 2; ctx.strokeStyle = hexA(PAL.accent, lerp(0.42, 0.2, kM)); ctx.stroke(); }
+  // 区间 P10–P90: 从线上长出来 + 左→右展开
+  const kb = kBand(t);
+  if (kb > 0.001) {
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, frontBand(t), 1080); ctx.clip();
+    const top = i => lerp(yLine(i, t), yT(MHI[i]), kb), bot = i => lerp(yLine(i, t), yT(MLO[i]), kb);
+    ctx.beginPath(); ctx.moveTo(xAt(0), top(0));
+    for (let i = 1; i < N; i++) ctx.lineTo(xAt(i), top(i));
+    for (let i = N - 1; i >= 0; i--) ctx.lineTo(xAt(i), bot(i));
+    ctx.closePath(); ctx.fillStyle = hexA(PAL.accent, 0.15 * kb); ctx.fill();
+    ctx.strokeStyle = hexA(PAL.accent, 0.33); ctx.lineWidth = 1.6;
+    for (const f of [top, bot]) { ctx.beginPath(); ctx.moveTo(xAt(0), f(0)); for (let i = 1; i < N; i++) ctx.lineTo(xAt(i), f(i)); ctx.stroke(); }
+    ctx.restore();
+  }
+  // 坐标轴
+  const ka = sstep(T.axis, T.axis + 0.34, t);
+  if (ka > 0.001) {
+    ctx.save(); ctx.globalAlpha = o * ka; ctx.font = monoF(23); ctx.textBaseline = 'middle';
+    ctx.strokeStyle = hexA(PAL.line, 0.9); ctx.lineWidth = 1;
+    for (const v of [2, 10, 18, 26]) {
+      const y = yT(v) + 0.5;
+      ctx.beginPath(); ctx.moveTo(X0, y); ctx.lineTo(X1, y); ctx.stroke();
+      ctx.fillStyle = hexA(PAL.mute, 0.95); ctx.textAlign = 'left'; ctx.fillText(v + '℃', X1 + 16, yT(v));
+    }
+    const yAx = PLOT_BOT + 36;
+    ctx.fillStyle = hexA(PAL.mute, 0.95); ctx.textAlign = 'left'; ctx.fillText('现在', X0, yAx);
+    ctx.textAlign = 'center';
+    ctx.fillText('+24h', X0 + (X1 - X0) / 3, yAx);
+    ctx.fillText('+48h', X0 + (X1 - X0) * 2 / 3, yAx);
+    ctx.textAlign = 'right'; ctx.fillText('+72h', X1, yAx);
+    ctx.restore();
+  }
+  // 主曲线
+  { const clip = t < T.morph0 ? frontDraw(t) : X1 + 40;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, clip, 1080); ctx.clip();
+    poly(ctx, i => yLine(i, t));
+    ctx.strokeStyle = PAL.accent; ctx.lineWidth = 3.6; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.restore(); }
+  // 受冻临界 2℃ 虚线(射入 + 亮头 + 标签)
+  if (t >= T.tape0 - 0.02) {
+    const fx = frontTape(t);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, fx, 1080); ctx.clip();
+    ctx.setLineDash([15, 11]); ctx.lineWidth = 2.6; ctx.strokeStyle = hexA(danger, 0.94);
+    ctx.beginPath(); ctx.moveTo(X0, YTH); ctx.lineTo(X1, YTH); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    if (t < T.tape1 + 0.06) { ctx.beginPath(); ctx.arc(fx, YTH, 6.5, 0, Math.PI * 2); ctx.fillStyle = danger; ctx.fill(); }
+    const kl = sstep(T.tape1, T.tape1 + 0.22, t);
+    if (kl > 0.001) {
+      ctx.save(); ctx.globalAlpha = o * kl; ctx.font = monoF(24); ctx.setLineDash([]);
+      ctx.fillStyle = danger; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('受冻临界 2 ℃', X0 + 14, YTH - 18); ctx.restore();
+    }
+  }
+  // 笔尖
+  const np = nibPos(t);
+  if (np) {
+    const g = ctx.createRadialGradient(np[0], np[1], 0, np[0], np[1], 30);
+    g.addColorStop(0, hexA(PAL.accent, 0.22)); g.addColorStop(1, hexA(PAL.accent, 0));
+    ctx.beginPath(); ctx.arc(np[0], np[1], 30, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.arc(np[0], np[1], 12.5, 0, Math.PI * 2); ctx.fillStyle = PAL.ground; ctx.fill();
+    ctx.lineWidth = 2.4; ctx.strokeStyle = PAL.accent; ctx.stroke();
+    ctx.beginPath(); ctx.arc(np[0], np[1], 4.6, 0, Math.PI * 2); ctx.fillStyle = PAL.accent; ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ────────────────────────────────── 画: 上层画布(地形卡片上的线 → 落版下划线) ──────────────────────────────────
+function cardLinePts() {
+  const s = MC.w / MC_IMG.w, y0 = MC_IMG.crop0;
+  return Array.from({ length: N }, (_, i) => {
+    const f = i / (N - 1), lon = lerp(LON_A, LON_B, f), lat = lerp(LAT_A, LAT_B, f);
+    return [MC.x + ((lon - BBOX[0]) / (BBOX[2] - BBOX[0]) * MC_IMG.w) * s,
+            MC.y + ((1 - (lat - BBOX[1]) / (BBOX[3] - BBOX[1])) * MC_IMG.w - y0) * s];
+  });
+}
+let undW = 1100;
+const underPts = () => { const x0 = 960 - undW / 2; return Array.from({ length: N }, (_, i) => [lerp(x0, x0 + undW, i / (N - 1)), 706]); };
+function drawTopArt(t) {
+  ctxT.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctxT.clearRect(0, 0, 1920, 1080);
+  const kc = easeDraw(seg(t, T.cardLine0, T.cardLine1));
+  const ku = easeMorph(seg(t, T.under0, T.under1));
+  if (kc <= 0.001) return;
+  const A = cardLinePts(), B = underPts(), front = kc * (N - 1);
+  ctxT.beginPath();
+  let lx = 0, ly = 0;
+  for (let i = 0; i < N; i++) {
+    const x = lerp(A[i][0], B[i][0], ku), y = lerp(A[i][1], B[i][1], ku);
+    lx = x; ly = y;
+    if (i === 0) ctxT.moveTo(x, y); else if (i <= front + 0.6) ctxT.lineTo(x, y); else break;
+  }
+  ctxT.lineTo(lx, ly + 1.2);          // 回笔 1.2px: 让这条线的包围盒不为零(渲染上看不出来)
+  ctxT.lineJoin = 'round'; ctxT.lineCap = 'round';
+  ctxT.globalAlpha = 0.7 * (1 - ku);            // 地形图上的白衬底随折场连续退去
+  ctxT.strokeStyle = '#ffffff'; ctxT.lineWidth = 7; ctxT.stroke();
+  ctxT.globalAlpha = 1;
+  ctxT.strokeStyle = LINE_C; ctxT.lineWidth = 3.6; ctxT.stroke();   // 一条线, 一个身份
+  if (kc > 0.002 && kc < 0.998 && ku < 0.05) {
+    const p = A[Math.min(N - 1, Math.round(front))];
+    ctxT.beginPath(); ctxT.arc(p[0], p[1], 9, 0, Math.PI * 2); ctxT.fillStyle = '#fff'; ctxT.fill();
+    ctxT.lineWidth = 2.6; ctxT.strokeStyle = LINE_C; ctxT.stroke();
+  }
+}
+
+// ────────────────────────────────── 窗口 / 光标 ──────────────────────────────────
+let chipW = 300, chipH = 52;
+const CHIP = { x: 1330, y: 588 };
+const winRect = t => {
+  const k = easeMorph(seg(t, T.win0, T.win1)), sm = easeMorph(seg(t, T.shrink0, T.shrink1));
+  const r1 = { x: lerp(CHIP.x, WIN.x, k), y: lerp(CHIP.y, WIN.y, k), w: lerp(chipW, WIN.w, k), h: lerp(chipH, WIN.h, k) };
+  return { x: lerp(r1.x, WIN_SMALL.x, sm), y: lerp(r1.y, WIN_SMALL.y, sm),
+           w: lerp(r1.w, WIN_SMALL.w, sm), h: lerp(r1.h, WIN_SMALL.h, sm),
+           o: (t < T.win0 ? 0 : 1) * (1 - ssstep(T.fold0, T.fold1, t)) };
+};
+const panY = t => easeMorph(seg(t, T.pan0, T.pan1)) * 1030;
+const CW = 642, CYY = 304.6;                       // 「什么时候采摘?」 快捷问题在页面里的 CSS 位置
+const clickPt = () => { const k = wK(WIN.h); return [WIN.x + CW * k, WIN.y + WIN.bar + CYY * k]; };
+const HAND = (() => { const p = clickPt(); return [
+  { t: 8.55, x: p[0] + 330, y: p[1] + 250 }, { t: 9.02, x: p[0] + 20, y: p[1] + 12 },
+  { t: T.click, x: p[0], y: p[1] }, { t: 9.30, x: p[0], y: p[1] },
+  { t: 9.90, x: p[0] + 60, y: p[1] + 30 }, { t: 10.55, x: p[0] + 460, y: p[1] + 230 }]; })();
+const CLICKS = [T.click];
+
+// ────────────────────────────────── DOM 文字 ──────────────────────────────────
+function spanRise(el, t, t0s, outAt) {
+  [...el.children].forEach((s, i) => {
+    const w = OM.wordRise(t, t0s[i]);
+    s.style.opacity = w.op; s.style.transform = `translateY(${w.y.toFixed(2)}px) scale(${w.s.toFixed(4)})`;
+  });
+  const k = ssstep(outAt, outAt + 0.26, t);
+  el.style.opacity = 1 - k;
+  el.style.transform = `translate(0,${(-k * 26).toFixed(1)}px)`;
+}
+function monoIn(el, t, t0, out) {
+  const w = OM.wordRise(t, t0, { dist: 15, zeta: 0.6, omega: 17 });
+  const k = out == null ? 0 : ssstep(out, out + 0.22, t);
+  const y = w.y + k * 14;
+  el.style.transform = `translateY(${y.toFixed(2)}px)`;
+  el.style.opacity = w.op * (1 - k);
+}
+
+// ────────────────────────────────── seek ──────────────────────────────────
+let wmW = 1100;
+function seek(t) {
+  const pend = [];
+  const sh = OM.shake(t, T.tape1, { amp: 5.4, decay: 9, seed: 7 });
+  const sh2 = OM.shake(t, T.win1, { amp: 3.2, decay: 8, seed: 11 });
+  $('world').style.transform = `translate(${(sh.x + sh2.x).toFixed(2)}px,${(sh.y + sh2.y).toFixed(2)}px)`;
+
+  drawLineArt(t);
+  drawTopArt(t);
+
+  // 词语(S1–S4 共用左上同一位置; 每一句把上一句顶出场)
+  spanRise($('w1'), t, [0.86, 1.10], T.morph0 + 0.02);
+  spanRise($('w2'), t, [2.12, 2.36], T.band0 + 0.04);
+  spanRise($('w3'), t, [3.04, 3.28], T.tape0 + 0.04);
+  spanRise($('w4'), t, [14.06, 14.30], T.fold0 + 0.02);
+  monoIn($('mband'), t, 3.52, T.tape0);
+  monoIn($('m1'), t, 7.32, 8.62);
+  monoIn($('m2'), t, 8.72, 11.50);
+  monoIn($('m3'), t, 11.62, 13.30);
+  monoIn($('m4'), t, 14.64, T.fold0 + 0.06);
+
+  // 胶囊 → 它的矩形就是窗口的起点(carry)
+  { const el = $('chip'); const w = OM.popIn(t, T.chipIn, { rise: 24, s0: 0.88 });
+    const gone = ssstep(T.win0, T.win0 + 0.2, t);
+    el.style.transform = `translate(${CHIP.x}px,${(CHIP.y + w.dy).toFixed(1)}px) scale(${w.s.toFixed(3)})`;
+    el.style.opacity = Math.min(w.op, 1 - gone); }
+
+  // 浏览器窗口: 真实页面(整页截图, 窗口内滚动)
+  const lo = OM.liftOut(t, T.fold0, { dur: 0.62, dist: 170, blur: 9, grow: 0.02 });
+  const lo2 = OM.liftOut(t, T.fold0 + 0.05, { dur: 0.62, dist: 150, blur: 9, grow: 0.02 });
+  { const w = winRect(t), k = wK(w.h), pan = panY(t), el = $('win');
+    el.style.width = w.w.toFixed(1) + 'px'; el.style.height = w.h.toFixed(1) + 'px';
+    el.style.transform = `translate(${w.x.toFixed(1)}px,${(w.y + lo.dy).toFixed(1)}px) scale(${(1 + (lo.s - 1) * 0.5).toFixed(4)})`;
+    el.style.filter = lo.blur > 0.3 ? `blur(${lo.blur.toFixed(1)}px)` : 'none';
+    el.style.opacity = w.o * (1 - lo.k);
+    el.style.borderRadius = lerp(chipH / 2, 16, ssstep(T.win0, T.win0 + 0.5, t)).toFixed(1) + 'px';
+    el.querySelector('.bar').style.opacity = ssstep(T.win0 + 0.3, T.win0 + 0.62, t);
+    const img = $('winimg');
+    const after = ssstep(T.swap0, T.swap1, t) > 0.5;
+    const src = after ? 'assets/shots/dash_full_after.png' : 'assets/shots/dash_full.png';
+    if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; pend.push(img.decode().catch(() => { })); }
+    img.style.width = (1920 * k).toFixed(1) + 'px';
+    img.style.transform = `translateY(${(-pan * k).toFixed(1)}px)`;
+  }
+
+  // 指针(因)
+  { const vis = t >= T.curIn && t < 10.5, cu = OM.cursor(t, HAND, CLICKS), el = $('cursor');
+    el.style.opacity = vis ? 1 : 0;
+    el.style.transform = `translate(${(cu.x - 4).toFixed(1)}px,${(cu.y - 3).toFixed(1)}px) scale(${cu.s.toFixed(3)})`; }
+
+  // 地图卡片: 真实地形 + 两处茶园
+  { const k = easeMorph(seg(t, T.mapIn, T.mapIn + T.mapRise)), out = ssstep(T.fold0, T.fold1, t);
+    const el = $('mapcard');
+    el.style.width = MC.w + 'px'; el.style.height = MC.h + 'px';
+    el.style.transform = `translate(${lerp(MC.x + 200, MC.x, k).toFixed(1)}px,${(lerp(MC.y + 44, MC.y, k) + lo2.dy).toFixed(1)}px) scale(${(1 + (lo2.s - 1) * 0.5).toFixed(4)})`;
+    el.style.filter = lo2.blur > 0.3 ? `blur(${lo2.blur.toFixed(1)}px)` : 'none';
+    el.style.opacity = k * (1 - out) * (1 - lo2.k);
+    const pA = mapPt(120.062, 30.184), pB = mapPt(120.095, 30.215);
+    const put = (id, p, tt) => { const e = $(id), kk = sstep(tt, tt + 0.3, t);
+      e.style.transform = `translate(${(p[0] - MC.x - 10).toFixed(1)}px,${(p[1] - MC.y - 10).toFixed(1)}px) scale(${(0.3 + 0.7 * kk).toFixed(3)})`;
+      e.style.opacity = kk; };
+    put('dotA', pA, T.dotA); put('dotB', pB, T.dotB);
+    const la = $('labA'), lb = $('labB');
+    const wa = OM.wordRise(t, T.labA, { dist: 12 }), wb = OM.wordRise(t, T.labB, { dist: 12 });
+    la.style.transform = `translate(${(pA[0] - MC.x - 14).toFixed(1)}px,${(pA[1] - MC.y - 42 + wa.y).toFixed(1)}px)`;
+    la.style.opacity = wa.op;
+    lb.style.transform = `translate(${(pB[0] - MC.x + 12).toFixed(1)}px,${(pB[1] - MC.y + 14 + wb.y).toFixed(1)}px)`;
+    lb.style.opacity = wb.op; }
+
+  // 落版
+  { $('dark').style.opacity = ssstep(T.dark0, T.dark1, t);
+    [...$('wordmark').children].forEach((s, i) => {
+      const d = OM.letterDrop(t, T.letters, i, { stagger: 0.055 });
+      s.style.opacity = d.op;
+      s.style.transform = `translateY(${d.y.toFixed(1)}px) scale(${(1 + d.sq * 0.5).toFixed(4)},${(1 - d.sq).toFixed(4)})`;
+    });
+    const tg = OM.wordRise(t, T.tag, { dist: 15, zeta: 0.6, omega: 16 });
+    $('tag1').style.transform = `translateY(${tg.y.toFixed(1)}px)`; $('tag1').style.opacity = tg.op;
+    const tg2 = OM.wordRise(t, T.tag + 0.12, { dist: 15, zeta: 0.6, omega: 16 });
+    $('tag2').style.transform = `translateY(${tg2.y.toFixed(1)}px)`; $('tag2').style.opacity = tg2.op; }
+
+  $('hud').textContent = 't=' + t.toFixed(3);
+  return Promise.all(pend);
+}
+
+// ────────────────────────────────── 运动量(render.py 定快门采样) ──────────────────────────────────
+window.__motion = (t0, t1) => {
+  const pts = t => {
+    const w = winRect(t), cu = OM.cursor(t, HAND, CLICKS), np = nibPos(t);
+    const mk = easeMorph(seg(t, T.mapIn, T.mapIn + T.mapRise)) * (1 - ssstep(T.fold0, T.fold1, t));
+    const mx = lerp(MC.x + 200, MC.x, mk), my = lerp(MC.y + 44, MC.y, mk);
+    const a = [[w.x, w.y], [w.x + w.w, w.y], [w.x, w.y + w.h], [w.x + w.w, w.y + w.h],
+    [frontDraw(t), YTH], [frontBand(t), PLOT_TOP], [frontTape(t), YTH], [cu.x, cu.y],
+    [mx, my], [mx + MC.w, my], [mx, my + MC.h], [mx + MC.w, my + MC.h]];
+    if (np) a.push(np);
+    return a;
+  };
+  const A = pts(t0), Bp = pts(t1);
+  let m = 0;
+  for (let i = 0; i < A.length; i++) m = Math.max(m, Math.hypot(Bp[i][0] - A[i][0], Bp[i][1] - A[i][1]));
+  if (t1 > T.letters && t0 < T.letters + 1.0) m = Math.max(m, 260);
+  return m;
+};
+
+// ────────────────────────────────── 引导 ──────────────────────────────────
+window.__seek = async t => { await seek(t); return true; };
+const wmEl = $('wordmark');
+'梅家坞茶园微气候智能体'.split('').forEach(ch => { const s = document.createElement('span'); s.textContent = ch; wmEl.appendChild(s); });
+window.__ready = (window.LOOK ? LOOK.ready : Promise.resolve()).then(() => {
+  const cb = $('chip').getBoundingClientRect(); chipW = cb.width; chipH = cb.height;
+  wmW = wmEl.getBoundingClientRect().width; undW = wmW + 30;
+  return Promise.all([$('winimg').decode().catch(() => { }), $('mapimg').decode().catch(() => { })]);
+}).then(() => seek(0));
+const q = new URLSearchParams(location.search);
+if (q.has('t')) window.__ready.then(() => seek(parseFloat(q.get('t'))));
+if (q.has('hud')) $('hud').style.display = 'block';
+if (q.has('play')) window.__ready.then(() => { const t0 = performance.now(); (function loop() { seek(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })(); });
+</script>
+</body>
+</html>

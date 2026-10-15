@@ -300,13 +300,23 @@ def predict(inp: PredictIn):
 
 @router.get("/overlay")
 def overlay(layer: str = "hillshade"):
-    """梅家坞网格地形叠加层 PNG (hillshade=山体阴影, dem=高程配色)"""
+    """梅家坞网格地形叠加层 PNG (terrain=地形图, hillshade=山体阴影, dem=高程配色)"""
     grid = TERRAIN_DIR / "meijiawu"
     out = SITES_DIR / f"meijiawu_{layer}.png"
     if out.exists():
         return {"url": f"/pred/meijiawu_{layer}.png",
                 "bbox": list(terrain.MEIJIAWU_BBOX)}
-    if layer == "hillshade":
+    if layer == "terrain":
+        # 高程配色 × 山体阴影 = 不透明地形图 (小程序底图用, 可完整覆盖街道地图)
+        import rasterio
+        with rasterio.open(grid / "dem_30m.tif") as s:
+            dem = s.read(1).astype(np.float64)
+        dem[dem == -32768] = np.nan
+        with rasterio.open(grid / "hillshade.tif") as s:
+            hs = s.read(1).astype(np.float64)
+        hs[hs < 0] = np.nan
+        _render_terrain(dem, {"hillshade": hs}, list(terrain.MEIJIAWU_BBOX), out)
+    elif layer == "hillshade":
         with __import__("rasterio").open(grid / "hillshade.tif") as s:
             arr = s.read(1).astype(np.float64)
             arr[arr < 0] = np.nan
@@ -318,7 +328,7 @@ def overlay(layer: str = "hillshade"):
             arr[arr == -32768] = np.nan
         _render_overlay(arr, list(terrain.MEIJIAWU_BBOX), out, "terrain")
     else:
-        raise HTTPException(400, "layer 只能是 hillshade 或 dem")
+        raise HTTPException(400, "layer 只能是 terrain、hillshade 或 dem")
     return {"url": f"/pred/meijiawu_{layer}.png",
             "bbox": list(terrain.MEIJIAWU_BBOX)}
 

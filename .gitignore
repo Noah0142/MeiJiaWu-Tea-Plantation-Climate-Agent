@@ -40,3 +40,9 @@ venv/
 .DS_Store
 Thumbs.db
 .zcode/
+.tools/
+
+# 宣传片: 渲染中间帧与草稿截图(产物 draft.mp4 / stills.png 入库)
+docs/promo/film/_frames/
+docs/promo/film/frame_*.png
+docs/promo/film/mp4_*.jpg

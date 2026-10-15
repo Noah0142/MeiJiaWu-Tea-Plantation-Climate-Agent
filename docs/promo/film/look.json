@@ -1,0 +1,32 @@
+{
+  "name": "meijiawu",
+  "from": "C:/Hackthon/AI4Climate/docs/promo/film/assets/shots/dash_light.png, C:/Hackthon/AI4Climate/docs/promo/film/assets/shots/card_chat.png",
+  "mood": "the product’s own tokens: warm paper ground, tea-green accent, pine ink",
+  "color": {
+    "ground": "#f8f7f1",
+    "deep": "#f2f0e9",
+    "card": "#ffffff",
+    "line": "#e2e6e0",
+    "mute": "#536257",
+    "ink": "#132419",
+    "accent": "#267543",
+    "accent2": "#b47825"
+  },
+  "type": {
+    "display": {
+      "face": "Instrument Serif",
+      "weight": 400,
+      "tracking": -0.01
+    },
+    "text": {
+      "face": "Inter",
+      "weight": 500,
+      "tracking": -0.02
+    },
+    "mono": {
+      "face": "Geist Mono",
+      "weight": 400,
+      "tracking": 0
+    }
+  }
+}

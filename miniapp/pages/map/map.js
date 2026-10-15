@@ -1,4 +1,6 @@
-// 地图选点: 微信原生 map 组件 + 点击选点 -> 地形剖面 -> 运行微气候模型 -> 叠加层贴图
+// 地图选点: 微信原生 map 组件 + 地形图底图(groundOverlay) + 点击选点 -> 地形剖面 -> 运行微气候模型
+// 底图说明: 微信 map 组件自带街道/卫星两种底图, 地形图由后端渲染的 meijiawu_terrain.png
+// (高程配色 x 山体阴影, 不透明) 通过 MapContext.addGroundOverlay 贴上, 不透明度 1 完整覆盖街道地图。
 const api = require("../../utils/api");
 
 const PRESETS = [
@@ -7,6 +9,13 @@ const PRESETS = [
   { name: "云栖竹径", lat: 30.184, lon: 120.062 },
   { name: "九溪", lat: 30.196, lon: 120.115 },
 ];
+
+const BASES = [
+  { key: "terrain", label: "地形图" },
+  { key: "satellite", label: "卫星图" },
+  { key: "street", label: "街道图" },
+];
+const BASE_OVERLAY_ID = "base-terrain";
 
 function aspectText(deg) {
   if (deg == null) return "—";
@@ -24,10 +33,13 @@ const fmt = (v, nd = 1) => (v == null ? "—" : Number(v).toFixed(nd));
 Page({
   data: {
     presets: PRESETS,
+    bases: BASES,
+    base: "terrain",       // 底图: terrain(地形图, 默认) / satellite / street
+    satellite: true,       // enable-satellite: 地形/卫星模式下用卫星影像打底
+    baseNote: "",
     centerLat: 30.206,
     centerLon: 120.084,
     scale: 14,
-    mapLayerStyle: 2,  // 2=卫星图, 1=街道图
     marker: null,
     point: null,          // 点位地形信息
     pointLoading: false,
@@ -35,9 +47,7 @@ Page({
     elapsed: 0,
     result: null,         // 微气候预测结果
     overlays: [],         // 模型运行后的叠加层(霜冻等)
-    terrainOverlay: null, // 地形 hillshade 叠加层(常驻底图)
     overlayOn: true,
-    allOverlays: [],      // 合并后的所有叠加层(地形 + 模型层)
     mapH: 440,            // 地图高度(rpx)
   },
 
@@ -45,58 +55,108 @@ Page({
     // 高度自适应: 地图占屏幕 42%
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
     this.setData({ mapH: Math.round(info.windowHeight * 0.42 * 2) });
-    // 加载地形底图叠加层(hillshade)
-    this.loadTerrainOverlay();
   },
 
-  // 地图加载完成后切换为卫星图层
+  onReady() {
+    this.mapCtx = wx.createMapContext("teaMap", this);
+  },
+
+  // 地图原生组件就绪 -> 应用底图与叠加层
   onMapReady() {
-    console.log("[map] 地图 ready, 尝试切换卫星图(layer-style=" + this.data.mapLayerStyle + ")");
-    const ctx = wx.createMapContext("teaMap", this);
-    if (ctx && typeof ctx.setMapStyle === "function") {
-      // 某些基础库版本支持 setMapStyle, 尝试强制切换
-      ctx.setMapStyle({
-        styleId: "2",
-        success: (res) => console.log("[map] setMapStyle 成功", res),
-        fail: (err) => console.warn("[map] setMapStyle 失败", err),
-      });
-    }
+    this.mapCtx = wx.createMapContext("teaMap", this);
+    this._applyAll();
   },
 
-  // 合并地形叠加层与模型叠加层
-  _refreshAllOverlays() {
-    const list = [];
-    if (this.data.terrainOverlay) {
-      list.push(this.data.terrainOverlay);
-    }
-    if (this.data.overlayOn && this.data.overlays.length) {
-      list.push(...this.data.overlays);
-    }
-    this.setData({ allOverlays: list });
+  // ---------- 底图 ----------
+  onBase(e) {
+    const base = e.currentTarget.dataset.key;
+    if (!base || base === this.data.base) return;
+    const satellite = base !== "street";
+    // enable-satellite 变化会重建底图, 叠加层需重贴 -> 在 setData 回调里统一应用
+    this.setData({ base, satellite, baseNote: "" }, () => this._applyAll());
   },
 
-  // 加载梅家坞地形叠加层(DEM 高程配色 + 山体阴影)
-  async loadTerrainOverlay() {
+  _applyAll() {
+    if (this.data.base === "terrain") this._showTerrainOverlay();
+    else this._hideTerrainOverlay();
+    this._applyModelOverlays();
+  },
+
+  // 地形图底图: 后端渲染的高程配色+山体阴影 PNG, 完整覆盖梅家坞范围
+  async _showTerrainOverlay() {
+    if (!this.mapCtx) return;
     try {
-      const d = await api.siteOverlay("dem");
-      const b = d.bbox; // [west, south, east, north]
-      const overlay = {
-        src: getApp().globalData.apiBase + d.url,
-        bounds: {
-          southwest: { latitude: b[1], longitude: b[0] },
-          northeast: { latitude: b[3], longitude: b[2] },
+      if (!this._terrain) {
+        const d = await api.siteOverlay("terrain");
+        const b = d.bbox; // [west, south, east, north]
+        this._terrain = {
+          id: BASE_OVERLAY_ID,
+          src: getApp().globalData.apiBase + d.url,
+          bounds: {
+            southwest: { latitude: b[1], longitude: b[0] },
+            northeast: { latitude: b[3], longitude: b[2] },
+          },
+          opacity: 1,
+          zIndex: 1,
+        };
+      }
+      this.mapCtx.removeGroundOverlay({ id: BASE_OVERLAY_ID, fail: () => {} });
+      this.mapCtx.addGroundOverlay({
+        ...this._terrain,
+        success: () => console.log("[map] 地形图底图已应用"),
+        fail: (err) => {
+          console.warn("[map] 地形图底图失败", err);
+          this._onTerrainFail();
         },
-        opacity: 0.7,
-      };
-      this.setData({ terrainOverlay: overlay });
-      this._refreshAllOverlays();
-      console.log("[map] 地形叠加层加载成功", d.url);
+      });
     } catch (e) {
-      console.warn("[map] 地形叠加层加载失败:", e.message);
+      console.warn("[map] 地形图获取失败:", e.message);
+      this._onTerrainFail();
     }
   },
 
-  // 地图点击选点
+  _hideTerrainOverlay() {
+    if (this.mapCtx) this.mapCtx.removeGroundOverlay({ id: BASE_OVERLAY_ID, fail: () => {} });
+  },
+
+  // 地形图不可用时降级: 切卫星影像(仍然不是街道图), 并提示原因
+  _onTerrainFail() {
+    if (this.data.base !== "terrain") return;
+    this.setData({
+      base: "satellite",
+      baseNote: "地形图加载失败(检查后端地址/网络), 已切换卫星影像",
+    });
+  },
+
+  // ---------- 模型叠加层 ----------
+  _applyModelOverlays() {
+    const ctx = this.mapCtx;
+    if (!ctx) return;
+    (this._modelIds || []).forEach((id) =>
+      ctx.removeGroundOverlay({ id, fail: () => {} })
+    );
+    const list = this.data.overlayOn ? this.data.overlays || [] : [];
+    const ids = [];
+    list.forEach((o, i) => {
+      const id = "model-" + i;
+      ctx.addGroundOverlay({
+        id,
+        src: o.src,
+        bounds: o.bounds,
+        opacity: o.opacity || 0.75,
+        zIndex: 10 + i,
+        fail: (err) => console.warn("[map] 模型叠加层失败", id, err),
+      });
+      ids.push(id);
+    });
+    this._modelIds = ids;
+  },
+
+  toggleOverlay() {
+    this.setData({ overlayOn: !this.data.overlayOn }, () => this._applyModelOverlays());
+  },
+
+  // ---------- 选点 ----------
   onMapTap(e) {
     if (!e.detail || e.detail.latitude == null) return;
     this.selectPoint(e.detail.latitude, e.detail.longitude);
@@ -186,19 +246,26 @@ Page({
                 },
               ]
             : [],
+        overlayOn: true,
       });
-      this._refreshAllOverlays();
+      this._applyModelOverlays();
+      // 视野收缩到预测窗口, 便于查看叠加层
+      if (b && this.mapCtx) {
+        this.mapCtx.includePoints({
+          points: [
+            { latitude: b[1], longitude: b[0] },
+            { latitude: b[3], longitude: b[2] },
+          ],
+          padding: [30, 30, 30, 30],
+          fail: () => {},
+        });
+      }
       wx.showToast({ title: `完成(耗时 ${d.elapsed_s}s)`, icon: "success" });
     } catch (e) {
       clearInterval(timer);
       this.setData({ predicting: false });
       wx.showToast({ title: `模型运行失败: ${e.message}`, icon: "none" });
     }
-  },
-
-  toggleOverlay() {
-    this.setData({ overlayOn: !this.data.overlayOn });
-    this._refreshAllOverlays();
   },
 
   // AI 解读该点位
