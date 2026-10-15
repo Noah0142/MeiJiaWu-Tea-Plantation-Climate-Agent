@@ -68,10 +68,16 @@ python "$ONETAKE/scripts/verify_promo.py" draft2.mp4 --comp comp2.html --shots 0
 | 字体 | Noto Serif SC / Noto Sans SC(SIL OFL 1.1,Google Fonts 子集);拉丁字面 Instrument Serif / Inter / Geist Mono(onetake 自带 OFL) |
 | 声音 | 全部原创合成(`sfx_palette.py` 的五件材料 + 一副房间): 环境床为每章一次的 sub+air 呼吸与每 12 秒一颗极轻的玻璃"钟",事件与画面节拍对齐;旁白闪避后统一 -4.5 dBFS。**没有第三方曲目** |
 
-## 四、自检
+## 四、自检(最终版)
 
-- `probe.py`: 承接/曲线,见 `probe2.txt`(边界是相机推走卡片,不是元素替换)。
-- `verify_promo.py`: 见 `verify2.txt`(`cadence` / `rest` / `burst` / `audio` / `continuity` / `curves`)。
+- `probe.py`: 4 个边界,承接分 **0.75**(3 个由相机推走的卡片承接,1 个是落版, 由导轨与下划线承接)。
+- `verify_promo.py` — **VERDICT: PASS**(见 `verify2.txt`):
+  `cadence` 镜头长度 15.2/21.3/12.3/28.0/34.5/17.1/14.6 s, CV 0.55(≥0.25);
+  `rest` 静止帧 **54.3%**、最长静默 12.9 s;`burst` / `not-flat` / `audio`(峰值 -4.5 dBFS,零削波);
+  `continuity` 0.75;`curves` 峰值 126 px/帧(180° 快门,90% 的位移在缓动曲线上)。
+- 制作过程中被 oracle 挡回过两次:第一次静止比 0.23(运镜太密、且相机的手持浮动全程不停),
+  第二次 0.17 —— 真因是 `drawArt` 清屏时用了单位矩阵,而画布是 DPR 倍分辨率(每帧只清掉左上四分之一,
+  旧画面残留叠加)。修好清屏后静止帧 523 → **1499**,一次通过。
 
 ## 五、已知限制(如实记录)
 

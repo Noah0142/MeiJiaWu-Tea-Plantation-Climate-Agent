@@ -316,7 +316,7 @@ function artCh7(t) {
 }
 function drawArt(t) {
   const c = camAt(t);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // 画布是 DPR 倍分辨率, 清屏必须带上 DPR
   ctx.clearRect(0, 0, 1920, 1080);
   setCam(c);
   artCh1(t); artCh2(t); artCh3(t); artCh4(t); artCh5(t); artCh6(t); artCh7(t);

@@ -61,14 +61,17 @@ AI4Climate/
 
 ## 产品宣传片
 
-`docs/promo/film/` 是用 [onetake](https://github.com/feitangyuan/onetake) 做的 17.4 秒产品宣传片
-([draft.mp4](docs/promo/film/draft.mp4),1080p30,带真实快门运动模糊)。
+用 [onetake](https://github.com/feitangyuan/onetake) 做了两部片子(都带真实快门运动模糊,1080p30):
 
-- 概念「一条线」: 山脊剖面(DEM 真实横断面)→ 气温曲线(真实 72h P50)→ P10–P90 区间 → 2℃ 受冻临界 →
-  真实网页版里的同一张图(实拍截图 + 真实 GLM-4-Flash 问答)→ 真实地形图上的同一条线 → 落版下划线;
-- 全部数字有出处(见 [docs/promo/film/README.md](docs/promo/film/README.md)),验收 oracle 全过
-  (`verify.txt`: cadence/rest/continuity 1.00/curves/audio 全 PASS);
-- 重跑: `python docs/promo/film/capture.py`(抓网页素材)→ `extract_line.py` → `score.py` → `render.py`。
+- **17 秒概念片** [docs/promo/film/draft.mp4](docs/promo/film/draft.mp4): 概念「一条线」——山脊剖面 → 气温曲线 →
+  P10–P90 区间 → 2℃ 受冻临界 → 真实页面里的同一张图 → 落版下划线;
+- **2:23 功能与模型介绍片** [docs/promo/film2/promo-2m23s.mp4](docs/promo/film2/promo-2m23s.mp4): 带中文旁白,
+  七章连续下潜 —— 片头 / 实时大盘 / 农事对话 / **地形图选点(含六张真实专题图层)** / **模型怎么练的(画出的图解:
+  ERA5-Land 672,840 小时 → 特征 → LightGBM 分位数回归 → 三段切分 → 真实指标)** / 传感器与手机 / 落版;
+  旁白为离线合成(Windows SAPI),时长实测后驱动字幕与章节;`verify_promo` 全项 PASS(见其 verify2.txt)。
+
+- 两部片的素材全部真实(实拍界面 + 真实接口数值),数字与出处写在各自的 README;
+- 重跑: 见 [film/README.md](docs/promo/film/README.md) 与 [film2/README.md](docs/promo/film2/README.md) 的复现命令。
 
 ## 微信小程序
 
