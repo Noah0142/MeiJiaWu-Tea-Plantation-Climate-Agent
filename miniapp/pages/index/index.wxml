@@ -1,0 +1,84 @@
+<view class="page">
+  <!-- 品牌头部 -->
+  <view class="brand">
+    <view>
+      <view class="brand-title">梅家坞茶园微气候智能体</view>
+      <text class="brand-sub">杭州西湖 · 0–72h 微气候预报 · 霜冻/高温预警</text>
+    </view>
+  </view>
+
+  <!-- 数据状态条 -->
+  <view class="statusbar">
+    <view class="dot"></view>
+    <text wx:if="{{issuedAt}}">{{issuedAt}} 起报 · 数据源 {{dataSource}}</text>
+    <text wx:else>数据加载中…</text>
+  </view>
+
+  <!-- 加载 / 错误 -->
+  <view wx:if="{{loading}}" class="loading-row"><view class="spinner"></view><text>正在获取实时数据…</text></view>
+  <view wx:elif="{{error}}" class="panel">
+    <view class="empty">加载失败: {{error}}</view>
+    <button class="btn btn-primary" bindtap="loadAll">重试</button>
+  </view>
+
+  <block wx:else>
+    <!-- 指标卡 2×2 -->
+    <view class="grid-2">
+      <view class="metric">
+        <view class="metric-label">当前气温</view>
+        <view class="metric-value tone-amber">{{cards.tnow}}<text class="unit">℃</text></view>
+        <view class="metric-sub">实况 {{cards.tnowTime}}</view>
+      </view>
+      <view class="metric">
+        <view class="metric-label">当前湿度</view>
+        <view class="metric-value tone-frost">{{cards.rh}}<text class="unit">%</text></view>
+        <view class="metric-sub">相对湿度</view>
+      </view>
+      <view class="metric">
+        <view class="metric-label">未来 24h 最低温</view>
+        <view class="metric-value tone-frost">{{cards.tmin}}<text class="unit">℃</text></view>
+        <view class="metric-sub">霜冻风险: {{cards.frost}}</view>
+      </view>
+      <view class="metric">
+        <view class="metric-label">未来 72h 最高温</view>
+        <view class="metric-value tone-amber">{{cards.tmax}}<text class="unit">℃</text></view>
+        <view class="metric-sub">高温风险: {{cards.heat}}</view>
+      </view>
+    </view>
+
+    <!-- 预报图 -->
+    <view class="panel">
+      <view class="panel-hd">
+        <text class="panel-title">茶园气温预报</text>
+        <text class="panel-note">未来 72h · P10–P90 为 80% 区间</text>
+      </view>
+      <line-chart hours="{{chartHours}}"></line-chart>
+    </view>
+
+    <!-- 风险预警 -->
+    <view class="panel">
+      <view class="panel-hd"><text class="panel-title">风险预警</text></view>
+      <view wx:for="{{riskRows}}" wx:key="label" class="risk-row">
+        <view>
+          <text class="risk-window">{{item.label}}</text>
+        </view>
+        <view class="risk-chips">
+          <text class="chip g{{item.frostGrade}}">{{item.frostText}}</text>
+          <text class="chip g{{item.heatGrade}}">{{item.heatText}}</text>
+        </view>
+        <text class="risk-detail">{{item.detail}}</text>
+      </view>
+    </view>
+
+    <!-- AI 农事建议 -->
+    <view class="panel">
+      <view class="panel-hd">
+        <text class="panel-title">AI 农事建议</text>
+        <text class="panel-note" bindtap="loadSummary">点击刷新</text>
+      </view>
+      <view wx:if="{{summaryLoading}}" class="loading-row"><view class="spinner"></view><text>正在生成建议…</text></view>
+      <view wx:elif="{{summary}}" class="msg-text">{{summary}}</view>
+      <view wx:else class="empty">建议暂不可用, 可到"农事助手"直接提问</view>
+    </view>
+  </block>
+</view>

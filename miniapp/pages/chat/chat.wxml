@@ -1,0 +1,32 @@
+<view class="chat-page">
+  <!-- 会话区 -->
+  <scroll-view class="chat-body" scroll-y scroll-into-view="{{scrollTo}}" scroll-with-animation>
+    <view class="chat-inner">
+      <view wx:if="{{engine}}" class="engine-tip">当前回答引擎: {{engine}}</view>
+
+      <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="chat-msg {{item.role}}">
+        <view class="bubble">{{item.role === 'agent' ? '助手: ' : ''}}{{item.content}}</view>
+      </view>
+
+      <view wx:if="{{sending}}" class="chat-msg agent">
+        <view class="bubble typing">思考中…</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 快捷提问 -->
+  <view class="quick-wrap">
+    <scroll-view scroll-x class="quick-scroll">
+      <view class="quick-row">
+        <text wx:for="{{quick}}" wx:key="*this" class="chip quick-chip" data-q="{{item}}" bindtap="onQuick">{{item}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 输入栏 -->
+  <view class="input-row">
+    <input class="field" value="{{draft}}" placeholder="例如: 明早几点最冷?" confirm-type="send"
+           bindinput="onInput" bindconfirm="send" cursor-spacing="16" />
+    <view class="send {{sending || !draft ? 'dim' : ''}}" bindtap="send">发送</view>
+  </view>
+</view>

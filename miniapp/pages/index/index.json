@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "梅家坞茶园微气候",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "line-chart": "/components/line-chart/line-chart"
+  }
+}

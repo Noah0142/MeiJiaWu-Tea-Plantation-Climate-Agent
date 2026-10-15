@@ -48,14 +48,26 @@ AI4Climate/
 ├── agent/                  # Web 服务 + LLM 问答层 + 地图选点 API(site_api.py); 密钥在 agent/.env
 ├── geosite/                # 地图选点微气候库(30m 地形/土地覆盖/物理降尺度/天气获取)
 ├── web/static/             # 前端页面(index.html 大盘 + map.html 地图页, 共用设计系统)
+├── miniapp/                # 微信小程序(4 tab: 大盘/农事助手/地图选点/数据接入)
 ├── models/                 # baseline / train_lgbm / evaluate / infer / predict / risk
 ├── features/               # 特征工程 + 数据集构建(严格三段切分)
 ├── scripts/                # prepare_training_data / make_synthetic_data / export_to_js
 ├── training_data/          # 原始数据(ERA5-Land × 6 文件、Open-Meteo 茶园序列、10m 茶园分布图)
 ├── data/                   # raw / processed / terrain(30m DEM) / landcover / microclimate / weather / sites
-├── docs/                   # training_plan.md / model_report.md / 项目文书.md / 产品介绍.md / 页面截图
+├── docs/                   # 训练/模型/文书文档; docs/miniapp/ 小程序设计系统与部署教程
 └── config.yaml             # 全局配置(路径、列名映射、切分日期、target_mode、超参)
 ```
+
+## 微信小程序
+
+`miniapp/` 是网页版的微信小程序复刻: 大盘(指标卡+72h 预报曲线+风险预警+AI 建议)、
+农事助手(多轮对话)、地图选点(原生地图选点+微气候预测+叠加层)、数据接入(服务器地址+传感器 CSV)。
+
+- **设计**: 延续网页版设计令牌(茶青主色/暖米白/衬线标题/大留白), 跟随系统深浅色;
+  高保真原型在 `docs/miniapp/prototype/index.html`(浏览器直接打开);
+- **部署教程**(从注册账号到体验版/正式发布): [docs/miniapp/deploy-guide.md](docs/miniapp/deploy-guide.md);
+- **使用方法**: 微信开发者工具「导入项目」→ 选择 `miniapp` 目录 → 本地调试填 `http://127.0.0.1:8000`,
+  云端填 Railway 域名(数据接入页可随时切换)。
 
 ## 快速开始
 

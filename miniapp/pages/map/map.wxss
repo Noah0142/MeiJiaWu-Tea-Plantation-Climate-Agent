@@ -1,0 +1,78 @@
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.map-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.map {
+  width: 100%;
+  height: 100%;
+}
+.map-hint {
+  position: absolute;
+  top: 20rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 22rpx;
+  padding: 10rpx 26rpx;
+  border-radius: 999rpx;
+}
+.overlay-toggle {
+  position: absolute;
+  right: 24rpx;
+  bottom: 24rpx;
+  background: var(--surface);
+  color: var(--text);
+  border: 1rpx solid var(--border);
+  font-size: 22rpx;
+  padding: 12rpx 26rpx;
+  border-radius: 999rpx;
+}
+
+.map-body {
+  flex: 1;
+  min-height: 0;
+}
+.map-inner {
+  padding: 20rpx 28rpx 0;
+}
+
+.preset-chips { margin-bottom: 4rpx; }
+
+.grid-info {
+  display: flex;
+  flex-wrap: wrap;
+}
+.info-item {
+  flex: 0 0 50%;
+  box-sizing: border-box;
+  padding: 12rpx 0;
+}
+.info-item .k {
+  display: block;
+  font-size: 22rpx;
+  color: var(--muted);
+}
+.info-item .v {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-top: 4rpx;
+}
+.grid-values {
+  font-size: 22rpx;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 12rpx;
+  line-height: 1.7;
+}
+.result-chip { margin-top: 16rpx; }
+.run-btn { margin-top: 24rpx; }
+.foot-space { height: 40rpx; }

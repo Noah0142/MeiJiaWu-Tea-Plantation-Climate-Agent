@@ -1,0 +1,63 @@
+<view class="page">
+  <!-- 服务器地址 -->
+  <view class="panel">
+    <view class="panel-hd">
+      <text class="panel-title">服务器地址</text>
+      <text class="panel-note">{{healthText}}</text>
+    </view>
+    <input class="api-input" value="{{apiBase}}" bindinput="onApiInput"
+           placeholder="https://你的项目.up.railway.app" />
+    <view class="btn-row">
+      <button class="btn btn-primary flex-1" bindtap="saveApi">保存并测试</button>
+      <button class="btn btn-ghost flex-1" bindtap="checkHealth">重新检测</button>
+    </view>
+    <view class="note">本地调试: 填 http://127.0.0.1:8000, 并在开发者工具「详情 → 本地设置」勾选"不校验合法域名"。真机与正式版请填 HTTPS 域名(见部署教程)。</view>
+  </view>
+
+  <!-- 传感器数据接入 -->
+  <view class="panel">
+    <view class="panel-hd">
+      <text class="panel-title">传感器数据接入</text>
+      <text class="panel-note">与气象站互补</text>
+    </view>
+
+    <view class="sensor-state {{sensor.connected ? 'on' : ''}}">
+      <text wx:if="{{sensor.connected}}">已接入: {{sensor.meta.filename}}</text>
+      <text wx:else>未接入(预报使用 Open-Meteo 气象站)</text>
+    </view>
+    <view wx:if="{{sensor.connected}}" class="sensor-meta">
+      <text>{{sensor.meta.rows_hourly}} 条逐小时记录 · {{sensor.meta.time_from}} ~ {{sensor.meta.time_to}}</text>
+    </view>
+
+    <view class="btn-row">
+      <button class="btn btn-primary flex-1" bindtap="chooseCsv" disabled="{{uploading}}">
+        {{uploading ? '上传中…' : '选择 CSV 上传'}}
+      </button>
+      <button wx:if="{{sensor.connected}}" class="btn btn-ghost flex-1" bindtap="removeSensor">移除数据</button>
+    </view>
+    <view wx:if="{{uploadMsg}}" class="upload-msg">{{uploadMsg}}</view>
+
+    <view class="note">小程序无法直接浏览手机本地文件: 请先将要上传的 CSV 发送到微信任意聊天(如"文件传输助手"), 再回到此处选择。</view>
+  </view>
+
+  <!-- CSV 格式说明 -->
+  <view class="panel">
+    <view class="panel-hd">
+      <text class="panel-title">CSV 格式说明</text>
+      <text class="panel-note" bindtap="copyDemo">复制示例</text>
+    </view>
+    <view class="csv-demo">{{csvDemo}}</view>
+    <view class="note">列名支持中英文: 时间/time、气温/temp、湿度/humidity、土壤温度、土壤湿度; 气温列为必需。接入后传感器覆盖时段用实测值锚定、其余时段由气象站背景场兜底, 两者互补驱动预报。</view>
+  </view>
+
+  <!-- 数据来源说明 -->
+  <view class="panel">
+    <view class="panel-hd"><text class="panel-title">数据来源</text></view>
+    <view class="src-list">
+      <text>· 微气候预报: 本地 LightGBM 模型(测试集 MAE 1.52℃, 霜冻命中率 98%)</text>
+      <text>· 实时气象: Open-Meteo 免费接口(逐小时自动更新)</text>
+      <text>· 地形与茶园分布: NASADEM 30m · ESA WorldCover 10m</text>
+      <text>· 农事问答: 大语言模型(回答基于模型预报, 不编造数据)</text>
+    </view>
+  </view>
+</view>

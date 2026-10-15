@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梅家坞茶园微气候小程序 · 高保真原型</title>
+<style>
+:root {
+  --bg:#f8f7f1; --surface:#ffffff; --surface2:#f2f0e9; --border:#e2e6e0;
+  --text:#132419; --muted:#536257; --primary:#267543; --primaryDim:#5a966b;
+  --amber:#b47825; --frost:#357b95; --danger:#c92f33;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#e9e7de; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding:36px 20px 60px; color:var(--text);
+}
+h1 { text-align:center; font-size:20px; font-weight:600; font-family:"Songti SC",serif; }
+.sub { text-align:center; color:#6b7167; font-size:12px; margin:8px 0 30px; }
+.frames { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+.frame-wrap { display:flex; flex-direction:column; gap:10px; }
+.frame-name { font-size:13px; font-weight:600; color:#3d4a40; text-align:center; }
+.phone {
+  width:375px; height:750px; background:var(--bg); border-radius:38px;
+  border:10px solid #1a201b; overflow:hidden; position:relative;
+  display:flex; flex-direction:column; box-shadow:0 18px 40px rgba(20,30,22,.18);
+}
+.statusbar-ios {
+  height:38px; display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 24px 4px; font-size:12px; font-weight:600; flex-shrink:0;
+}
+.statusbar-ios .icons { letter-spacing:2px; font-size:11px; }
+.navbar {
+  height:44px; display:flex; align-items:center; justify-content:center;
+  position:relative; font-size:16px; font-weight:600; flex-shrink:0;
+}
+.capsule {
+  position:absolute; right:14px; top:8px; width:78px; height:28px;
+  border-radius:999px; border:1px solid rgba(0,0,0,.14);
+  display:flex; align-items:center; justify-content:space-around;
+  background:rgba(255,255,255,.65);
+}
+.capsule span { width:4px; height:4px; border-radius:50%; background:#333; box-shadow:6px 0 0 #333; margin-left:-6px; }
+.capsule .line { width:1px; height:14px; background:rgba(0,0,0,.12); }
+.body { flex:1; overflow-y:auto; padding:16px 18px 20px; }
+.body::-webkit-scrollbar { display:none; }
+
+/* 通用卡片 */
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; margin-top:12px; }
+.panel:first-child { margin-top:0; }
+.panel-hd { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.panel-title { font-family:"Songti SC",serif; font-size:16px; font-weight:600; }
+.panel-note { font-size:11px; color:var(--muted); }
+
+.brand-title { font-family:"Songti SC",serif; font-size:20px; font-weight:600; }
+.brand-sub { display:block; font-size:11px; color:var(--muted); margin-top:3px; }
+
+.statusbar-pill {
+  display:flex; align-items:center; gap:6px; margin-top:12px; padding:7px 14px;
+  border:1px solid var(--border); border-radius:999px; background:var(--surface);
+  font-size:11.5px; color:var(--muted);
+}
+.statusbar-pill .dot { width:6px; height:6px; border-radius:50%; background:var(--primary); flex-shrink:0; }
+
+/* 指标卡 */
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.metric { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 15px; }
+.metric-label { font-size:11.5px; color:var(--muted); }
+.metric-value { font-size:26px; font-weight:600; line-height:1.25; margin:2px 0; font-variant-numeric:tabular-nums; }
+.metric-value .unit { font-size:13px; font-weight:400; color:var(--muted); margin-left:2px; }
+.metric-sub { font-size:10.5px; color:var(--muted); }
+.t-amber { color:var(--amber); } .t-frost { color:var(--frost); } .t-primary { color:var(--primary); }
+
+/* chip */
+.chip {
+  display:inline-flex; align-items:center; justify-content:center; min-height:28px;
+  padding:3px 13px; border-radius:999px; border:1px solid var(--border);
+  background:var(--surface2); color:var(--muted); font-size:12px;
+}
+.chip.g0 { color:var(--primary); border-color:rgba(38,117,67,.4); }
+.chip.g1,.chip.g2 { color:var(--amber); border-color:rgba(180,120,37,.5); }
+.chip.g3 { color:var(--danger); border-color:rgba(201,47,51,.5); }
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* 风险行 */
+.risk-row { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 0; border-bottom:1px dashed var(--border); flex-wrap:wrap; }
+.risk-row:last-child { border-bottom:none; padding-bottom:2px; }
+.risk-window { font-family:"Songti SC",serif; font-weight:600; font-size:13.5px; }
+.risk-detail { width:100%; font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* canvas 预报图占位(用 SVG 绘制) */
+.chart-svg { width:100%; display:block; }
+
+/* 对话 */
+.chat-msg { display:flex; margin-bottom:12px; }
+.chat-msg.user { justify-content:flex-end; }
+.bubble { max-width:84%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.65; }
+.chat-msg.agent .bubble { background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:5px; }
+.chat-msg.user .bubble { background:var(--primary); color:#fff; border-bottom-right-radius:5px; }
+.quick-scroll { display:flex; gap:8px; overflow-x:auto; padding:6px 0; }
+.quick-scroll::-webkit-scrollbar { display:none; }
+.quick-scroll .chip { flex-shrink:0; }
+.input-row {
+  display:flex; gap:8px; padding:9px 14px 14px; background:var(--surface);
+  border-top:1px solid var(--border); flex-shrink:0;
+}
+.input-row .field { flex:1; height:38px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); padding:0 15px; font-size:13px; color:var(--muted); display:flex; align-items:center; }
+.input-row .send { min-width:64px; height:38px; border-radius:999px; background:var(--primary); color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; }
+
+/* 地图页 */
+.map-area { height:190px; border-radius:12px; position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle at 30% 40%, #47664d 0%, #3a5642 26%, transparent 27%),
+    radial-gradient(circle at 72% 66%, #52715a 0%, #44604c 30%, transparent 31%),
+    linear-gradient(135deg, #5d7a63, #47624f);
+}
+.map-area .grain { position:absolute; inset:0; opacity:.35;
+  background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 2px, transparent 2px 7px); }
+.map-hint { position:absolute; top:10px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,.55); color:#fff; font-size:11px; padding:5px 14px; border-radius:999px; }
+.map-pin { position:absolute; left:50%; top:52%; transform:translate(-50%,-100%); }
+.overlay-toggle { position:absolute; right:10px; bottom:10px; background:#fff; border-radius:999px; font-size:11px; padding:6px 13px; color:var(--text); border:1px solid var(--border); }
+
+/* 信息网格 */
+.grid-info { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.info-item { padding:6px 0; }
+.info-item .k { display:block; font-size:11px; color:var(--muted); }
+.info-item .v { display:block; font-size:14px; font-weight:500; margin-top:2px; }
+.note { font-size:11px; color:var(--muted); line-height:1.7; border-left:2px solid var(--border); padding-left:8px; margin-top:8px; }
+.btn { display:flex; align-items:center; justify-content:center; min-height:46px; border-radius:10px; font-size:15px; font-weight:500; width:100%; margin-top:12px; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-ghost { background:var(--surface); border:1px solid var(--border); color:var(--muted); }
+
+/* 数据页 */
+.api-input { height:46px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); padding:0 14px; font-size:13px; color:var(--muted); display:flex; align-items:center; }
+.btn-row { display:flex; gap:10px; margin-top:12px; }
+.btn-row .btn { margin-top:0; }
+.sensor-state { min-height:42px; display:flex; align-items:center; padding:8px 13px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); font-size:13px; color:var(--muted); }
+.sensor-state.on { color:var(--primary); border-color:var(--primary); }
+.csv-demo { font-family:Menlo,Consolas,monospace; font-size:11px; line-height:1.8; white-space:pre-wrap; background:var(--surface2); border-radius:8px; padding:10px 12px; }
+.src-list { display:flex; flex-direction:column; gap:7px; font-size:12px; color:var(--muted); line-height:1.7; }
+
+/* 底部 tabBar */
+.tabbar { display:flex; border-top:1px solid #eceded; background:#fff; padding:6px 0 14px; flex-shrink:0; }
+.tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; color:#536257; }
+.tab .ic { width:24px; height:24px; }
+.tab.active { color:var(--primary); }
+</style>
+</head>
+<body>
+<h1>梅家坞茶园微气候小程序 · 高保真原型</h1>
+<p class="sub">375px 画布 · 微信胶囊与安全区已预留 · 数据为真实接口模拟值 · 仅用于视觉与流程确认</p>
+
+<div class="frames">
+
+  <!-- ============ ① 大盘 ============ -->
+  <div class="frame-wrap">
+    <div class="frame-name">① 大盘(首页)</div>
+    <div class="phone">
+      <div class="statusbar-ios"><span>9:41</span><span class="icons">▮▮▮ ⌾ ▰</span></div>
+      <div class="navbar">梅家坞茶园微气候<span class="capsule"><span></span><span class="line"></span><span></span></span></div>
+      <div class="body">
+        <view class="brand-title" style="font-size:19px;">梅家坞茶园微气候智能体</view>
+        <span class="brand-sub">杭州西湖 · 0–72h 微气候预报 · 霜冻/高温预警</span>
+
+        <div class="statusbar-pill"><span class="dot"></span>10-14 22:00 起报 · 数据源 Open-Meteo 实时</div>
+
+        <div class="grid2">
+          <div class="metric"><div class="metric-label">当前气温</div><div class="metric-value t-amber">17.2<span class="unit">℃</span></div><div class="metric-sub">实况 10-14 22:00</div></div>
+          <div class="metric"><div class="metric-label">当前湿度</div><div class="metric-value t-frost">69<span class="unit">%</span></div><div class="metric-sub">相对湿度</div></div>
+          <div class="metric"><div class="metric-label">未来 24h 最低温</div><div class="metric-value t-frost">13.4<span class="unit">℃</span></div><div class="metric-sub">霜冻风险: 无</div></div>
+          <div class="metric"><div class="metric-label">未来 72h 最高温</div><div class="metric-value t-amber">21.7<span class="unit">℃</span></div><div class="metric-sub">高温风险: 无</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">茶园气温预报</span><span class="panel-note">未来 72h · 80% 区间</span></div>
+          <svg class="chart-svg" viewBox="0 0 320 170" preserveAspectRatio="none">
+            <!-- 网格 -->
+            <g stroke="#e2e6e0" stroke-width="1">
+              <line x1="42" y1="20" x2="310" y2="20"/><line x1="42" y1="55" x2="310" y2="55"/>
+              <line x1="42" y1="90" x2="310" y2="90"/><line x1="42" y1="125" x2="310" y2="125"/>
+            </g>
+            <g fill="#a8a89e" font-size="9" text-anchor="end">
+              <text x="36" y="23">24℃</text><text x="36" y="58">20℃</text>
+              <text x="36" y="93">16℃</text><text x="36" y="128">12℃</text>
+            </g>
+            <!-- P10-P90 区间带 -->
+            <path d="M42,60 L58,52 L74,48 L90,58 L106,74 L122,88 L138,95 L154,90 L170,78 L186,62 L202,50 L218,44 L234,46 L250,54 L266,64 L282,72 L298,76 L310,78
+                     L310,108 L298,106 L282,102 L266,94 L250,86 L234,80 L218,78 L202,84 L186,92 L170,102 L154,110 L138,112 L122,106 L106,96 L90,84 L74,74 L58,70 L42,74 Z"
+                  fill="rgba(38,117,67,.13)"/>
+            <!-- P50 曲线 -->
+            <path d="M42,68 L58,60 L74,56 L90,68 L106,86 L122,100 L138,104 L154,100 L170,90 L186,74 L202,60 L218,52 L234,55 L250,66 L266,80 L282,90 L298,94 L310,96"
+                  fill="none" stroke="#267543" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- x 轴 -->
+            <g fill="#a8a89e" font-size="9" text-anchor="middle">
+              <text x="52" y="152">10-15 02时</text><text x="140" y="152">10-16 01时</text>
+              <text x="230" y="152">10-17 00时</text><text x="300" y="152">10-18 00时</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">风险预警</span></div>
+          <div class="risk-row"><span class="risk-window">未来 24h</span>
+            <span class="chips"><span class="chip g0">无霜冻</span><span class="chip g0">无热害</span></span>
+            <span class="risk-detail">最低 13.4℃(P10 10.4℃) · 最高 21.7℃</span></div>
+          <div class="risk-row"><span class="risk-window">未来 48h</span>
+            <span class="chips"><span class="chip g0">无霜冻</span><span class="chip g0">无热害</span></span>
+            <span class="risk-detail">最低 13.4℃(P10 10.4℃) · 最高 21.7℃</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 18c-3-3-3-6 0-9 3 3 3 6 0 9z" stroke="currentColor" stroke-width="1.4"/><path d="M12 17v-5m0 2.2l-2.4-1.7m2.4 .6l2.4-1.7" stroke="currentColor" stroke-width="1.1"/></svg><span>大盘</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M7 16.5l-1 3 3.4-2.4z" fill="currentColor"/><circle cx="9" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="10.5" r="1" fill="currentColor"/><circle cx="15" cy="10.5" r="1" fill="currentColor"/></svg><span>农事助手</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21c4-4.4 6-7.4 6-10a6 6 0 10-12 0c0 2.6 2 5.6 6 10z" fill="currentColor"/><circle cx="12" cy="10.6" r="2.2" fill="#fff"/></svg><span>地图选点</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="18" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6v12M19 6v12" stroke="currentColor" stroke-width="1.5"/></svg><span>数据接入</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ② 农事助手 ============ -->
+  <div class="frame-wrap">
+    <div class="frame-name">② 农事助手(对话)</div>
+    <div class="phone">
+      <div class="statusbar-ios"><span>9:41</span><span class="icons">▮▮▮ ⌾ ▰</span></div>
+      <div class="navbar">农事助手<span class="capsule"><span></span><span class="line"></span><span></span></span></div>
+      <div class="body">
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px;">当前回答引擎: 智谱 GLM-4-Flash(免费)</div>
+        <div class="chat-msg agent"><div class="bubble">助手: 您好! 我是梅家坞茶园微气候助手, 可以问我: 会不会有霜冻? 要不要覆盖防霜布? 什么时候可以采摘?</div></div>
+        <div class="chat-msg user"><div class="bubble">明后两天凌晨会有霜冻吗?</div></div>
+        <div class="chat-msg agent"><div class="bubble">助手: 未来 24h 最低温 13.4℃, 未来 48h 最低温 13.4℃, 均高于 4℃ 霜冻临界值, 明后两天凌晨没有霜冻风险, 不需要覆盖防霜布。10 月中旬昼夜温差较大(约 8–9℃), 建议关注茶树的早晚水分管理。</div></div>
+        <div class="chat-msg user"><div class="bubble">什么时候可以采摘?</div></div>
+        <div class="chat-msg agent"><div class="bubble">助手: 现在是 10 月中旬, 正值秋茶尾声, 日平均气温稳定在 15℃ 以上, 仍可采摘秋茶。11 月后气温下降, 茶树进入休眠期。明年春茶开采期可参考日均温稳定通过 6/8/10℃ 的日期, 我会在春季提前提醒您。</div></div>
+      </div>
+      <div class="quick-scroll" style="padding-left:14px;padding-right:14px;">
+        <span class="chip">明后两天凌晨会有霜冻吗?</span><span class="chip">要不要盖防霜布?</span><span class="chip">什么时候可以采摘?</span>
+      </div>
+      <div class="input-row"><div class="field">例如: 明早几点最冷?</div><div class="send">发送</div></div>
+    </div>
+  </div>
+
+  <!-- ============ ③ 地图选点 ============ -->
+  <div class="frame-wrap">
+    <div class="frame-name">③ 地图选点</div>
+    <div class="phone">
+      <div class="statusbar-ios"><span>9:41</span><span class="icons">▮▮▮ ⌾ ▰</span></div>
+      <div class="navbar">地图选点<span class="capsule"><span></span><span class="line"></span><span></span></span></div>
+      <div class="body" style="padding-top:10px;">
+        <div class="map-area">
+          <div class="grain"></div>
+          <div class="map-hint">点击地图选择茶园位置</div>
+          <div class="map-pin"><svg width="30" height="38" viewBox="0 0 24 30"><path d="M12 28c4.6-5.3 7-9.2 7-12.4A7 7 0 105 15.6C5 18.8 7.4 22.7 12 28z" fill="#1a66d1"/><circle cx="12" cy="15.4" r="2.6" fill="#fff"/></svg></div>
+          <div class="overlay-toggle">显示叠加层</div>
+        </div>
+        <div class="chips" style="margin-top:12px;">
+          <span class="chip">梅家坞村址</span><span class="chip">琅珰岭</span><span class="chip">云栖竹径</span><span class="chip">九溪</span>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">点位地形</span><span class="panel-note">30.206°N, 120.084°E</span></div>
+          <div class="grid-info">
+            <div class="info-item"><span class="k">海拔</span><span class="v">58 m</span></div>
+            <div class="info-item"><span class="k">坡度</span><span class="v">1.1°</span></div>
+            <div class="info-item"><span class="k">坡向</span><span class="v">西 270°</span></div>
+            <div class="info-item"><span class="k">地形位置 TPI</span><span class="v">-6.4 m</span></div>
+            <div class="info-item"><span class="k">土地覆盖</span><span class="v">建筑</span></div>
+          </div>
+          <div class="btn btn-primary">运行微气候模型</div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">本地微气候预测</span><span class="panel-note">耗时 3.1s</span></div>
+          <div class="grid-info">
+            <div class="info-item"><span class="k">明前积温 GDD</span><span class="v">143.7 °C·d</span></div>
+            <div class="info-item"><span class="k">春季霜冻(6年)</span><span class="v">582 h</span></div>
+            <div class="info-item"><span class="k">春季昼夜温差</span><span class="v">9.60 °C</span></div>
+            <div class="info-item"><span class="k">预计开采期</span><span class="v">3月29日</span></div>
+            <div class="info-item"><span class="k">未来72h最低</span><span class="v">15.8 °C</span></div>
+            <div class="info-item"><span class="k">72h霜冻小时</span><span class="v">0 h</span></div>
+          </div>
+          <div class="chips" style="margin-top:10px;"><span class="chip g0">未来 72h 无霜冻风险</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 18c-3-3-3-6 0-9 3 3 3 6 0 9z" stroke="currentColor" stroke-width="1.4"/><path d="M12 17v-5m0 2.2l-2.4-1.7m2.4 .6l2.4-1.7" stroke="currentColor" stroke-width="1.1"/></svg><span>大盘</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M7 16.5l-1 3 3.4-2.4z" fill="currentColor"/><circle cx="9" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="10.5" r="1" fill="currentColor"/><circle cx="15" cy="10.5" r="1" fill="currentColor"/></svg><span>农事助手</span></div>
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21c4-4.4 6-7.4 6-10a6 6 0 10-12 0c0 2.6 2 5.6 6 10z" fill="currentColor"/><circle cx="12" cy="10.6" r="2.2" fill="#fff"/></svg><span>地图选点</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="18" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6v12M19 6v12" stroke="currentColor" stroke-width="1.5"/></svg><span>数据接入</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ④ 数据接入 ============ -->
+  <div class="frame-wrap">
+    <div class="frame-name">④ 数据接入</div>
+    <div class="phone">
+      <div class="statusbar-ios"><span>9:41</span><span class="icons">▮▮▮ ⌾ ▰</span></div>
+      <div class="navbar">数据接入<span class="capsule"><span></span><span class="line"></span><span></span></span></div>
+      <div class="body">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">服务器地址</span><span class="panel-note">服务正常 · 地图功能可用</span></div>
+          <div class="api-input">https://meijiawu-climate.up.railway.app</div>
+          <div class="btn-row">
+            <div class="btn btn-primary">保存并测试</div><div class="btn btn-ghost">重新检测</div>
+          </div>
+          <div class="note">本地调试: 填 http://127.0.0.1:8000 并在开发者工具勾选"不校验合法域名"; 真机与正式版请填 HTTPS 域名。</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">传感器数据接入</span><span class="panel-note">与气象站互补</span></div>
+          <div class="sensor-state on">已接入: meijiawu_sensor_20261013.csv</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7;">30 条逐小时记录 · 2026-10-12 15:00 ~ 2026-10-13 20:00</div>
+          <div class="btn-row">
+            <div class="btn btn-primary">选择 CSV 上传</div><div class="btn btn-ghost">移除数据</div>
+          </div>
+          <div class="note">小程序无法直接浏览手机本地文件: 请先将 CSV 发送到微信任意聊天(如"文件传输助手"), 再回到此处选择。</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">CSV 格式说明</span><span class="panel-note">复制示例</span></div>
+          <div class="csv-demo">time,气温,湿度,土壤温度,土壤湿度
+2026-10-11 00:00,17.2,82,19.1,0.35
+2026-10-11 01:00,16.8,84,19.0,0.35</div>
+          <div class="note">列名支持中英文; 气温列为必需。接入后传感器覆盖时段用实测值锚定、其余时段由气象站背景场兜底, 两者互补驱动预报。</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 18c-3-3-3-6 0-9 3 3 3 6 0 9z" stroke="currentColor" stroke-width="1.4"/><path d="M12 17v-5m0 2.2l-2.4-1.7m2.4 .6l2.4-1.7" stroke="currentColor" stroke-width="1.1"/></svg><span>大盘</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M7 16.5l-1 3 3.4-2.4z" fill="currentColor"/><circle cx="9" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="10.5" r="1" fill="currentColor"/><circle cx="15" cy="10.5" r="1" fill="currentColor"/></svg><span>农事助手</span></div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21c4-4.4 6-7.4 6-10a6 6 0 10-12 0c0 2.6 2 5.6 6 10z" fill="currentColor"/><circle cx="12" cy="10.6" r="2.2" fill="#fff"/></svg><span>地图选点</span></div>
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><ellipse cx="12" cy="18" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6v12M19 6v12" stroke="currentColor" stroke-width="1.5"/></svg><span>数据接入</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

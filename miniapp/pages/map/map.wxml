@@ -1,0 +1,87 @@
+<view class="map-page">
+  <!-- 地图 -->
+  <view class="map-wrap" style="height: {{mapH}}rpx;">
+    <map
+      id="teaMap"
+      class="map"
+      layer-style="{{mapLayerStyle}}"
+      latitude="{{centerLat}}"
+      longitude="{{centerLon}}"
+      scale="{{scale}}"
+      markers="{{marker ? [{id:1, latitude: marker.latitude, longitude: marker.longitude, width: 30, height: 36}] : []}}"
+      ground-overlays="{{allOverlays}}"
+      bindtap="onMapTap"
+      bindready="onMapReady"
+      show-location="{{false}}"
+      enable-zoom
+      enable-scroll
+    ></map>
+    <view class="map-hint">点击地图选择茶园位置</view>
+    <view wx:if="{{overlays.length}}" class="overlay-toggle" bindtap="toggleOverlay">
+      {{overlayOn ? "关闭叠加层" : "显示叠加层"}}
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="map-body">
+    <view class="map-inner">
+      <!-- 常用位置 -->
+      <view class="chips preset-chips">
+        <text wx:for="{{presets}}" wx:key="name" class="chip" data-i="{{index}}" bindtap="onPreset">{{item.name}}</text>
+      </view>
+
+      <!-- 点位地形 -->
+      <view wx:if="{{pointLoading}}" class="loading-row"><view class="spinner"></view><text>查询点位地形中…</text></view>
+
+      <view wx:elif="{{point}}" class="panel">
+        <view class="panel-hd">
+          <text class="panel-title">点位地形</text>
+          <text class="panel-note">{{point.lat}}°N, {{point.lon}}°E</text>
+        </view>
+        <view class="grid-info">
+          <view class="info-item"><text class="k">海拔</text><text class="v">{{point.elevation}} m</text></view>
+          <view class="info-item"><text class="k">坡度</text><text class="v">{{point.slope}}°</text></view>
+          <view class="info-item"><text class="k">坡向</text><text class="v">{{point.aspect}}</text></view>
+          <view class="info-item"><text class="k">地形位置 TPI</text><text class="v">{{point.tpi}} m</text></view>
+          <view class="info-item"><text class="k">土地覆盖</text><text class="v">{{point.landcover}}</text></view>
+        </view>
+        <view wx:if="{{point.hasGrid}}" class="grid-values">
+          <text>该点现有微气候栅格值: 明前GDD {{point.gdd}} °C·d · 霜冻 {{point.frostH}} h/6年 · 开采 {{point.pluck}}</text>
+        </view>
+        <view class="note">{{point.note}}</view>
+
+        <button class="btn btn-primary run-btn" bindtap="runPredict" disabled="{{predicting}}">
+          {{predicting ? '运行中… 已耗时 ' + elapsed + 's' : '运行微气候模型'}}
+        </button>
+      </view>
+
+      <view wx:else class="panel">
+        <view class="empty">在上方地图点击任意位置, 或选择一个常用位置</view>
+      </view>
+
+      <!-- 预测结果 -->
+      <block wx:if="{{result}}">
+        <view class="panel">
+          <view class="panel-hd">
+            <text class="panel-title">本地微气候预测</text>
+            <text class="panel-note">耗时 {{result.elapsed}}s</text>
+          </view>
+          <view class="grid-info">
+            <view class="info-item"><text class="k">明前积温 GDD</text><text class="v">{{result.gdd}} °C·d</text></view>
+            <view class="info-item"><text class="k">春季霜冻(6年)</text><text class="v">{{result.frostH}} h</text></view>
+            <view class="info-item"><text class="k">春季昼夜温差</text><text class="v">{{result.dtr}} °C</text></view>
+            <view class="info-item"><text class="k">预计开采期</text><text class="v">{{result.pluck}}</text></view>
+            <view class="info-item"><text class="k">未来72h最低</text><text class="v">{{result.min72}} °C</text></view>
+            <view class="info-item"><text class="k">72h霜冻小时</text><text class="v">{{result.frost72h}} h</text></view>
+          </view>
+          <view class="chips result-chip">
+            <text class="chip g{{result.frostGrade}}">{{result.frostNote}}</text>
+          </view>
+          <view class="note">{{result.paramsNote}}{{result.warnings ? ' 提示: ' + result.warnings : ''}}</view>
+          <button class="btn btn-ghost run-btn" bindtap="askAI">AI 解读这个点位</button>
+        </view>
+      </block>
+
+      <view class="foot-space"></view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,0 +1,38 @@
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.chat-body {
+  flex: 1;
+  min-height: 0;
+}
+.chat-inner {
+  padding: 24rpx 28rpx 12rpx;
+}
+.engine-tip {
+  text-align: center;
+  font-size: 21rpx;
+  color: var(--muted);
+  margin-bottom: 20rpx;
+}
+.typing {
+  color: var(--muted);
+}
+
+.quick-wrap {
+  flex-shrink: 0;
+  padding: 8rpx 0;
+  background: var(--bg);
+}
+.quick-scroll { white-space: nowrap; }
+.quick-row {
+  display: inline-flex;
+  gap: 16rpx;
+  padding: 8rpx 28rpx 12rpx;
+}
+.quick-chip { flex-shrink: 0; }
+
+.send.dim { opacity: 0.5; }

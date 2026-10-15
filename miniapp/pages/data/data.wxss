@@ -1,0 +1,61 @@
+.api-input {
+  height: 92rpx;
+  padding: 0 28rpx;
+  border-radius: 20rpx;
+  background: var(--surface-2);
+  border: 1rpx solid var(--border);
+  font-size: 27rpx;
+  box-sizing: border-box;
+}
+.btn-row {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 24rpx;
+}
+.flex-1 { flex: 1; }
+
+.sensor-state {
+  display: flex;
+  align-items: center;
+  min-height: 84rpx;
+  padding: 16rpx 26rpx;
+  border-radius: 20rpx;
+  background: var(--surface-2);
+  border: 1rpx solid var(--border);
+  font-size: 26rpx;
+  color: var(--muted);
+}
+.sensor-state.on {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.sensor-meta {
+  font-size: 22rpx;
+  color: var(--muted);
+  margin-top: 12rpx;
+  line-height: 1.7;
+}
+.upload-msg {
+  margin-top: 20rpx;
+  font-size: 24rpx;
+  color: var(--primary);
+  line-height: 1.7;
+}
+.csv-demo {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 22rpx;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  background: var(--surface-2);
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  color: var(--text);
+}
+.src-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  font-size: 24rpx;
+  color: var(--muted);
+  line-height: 1.7;
+}
