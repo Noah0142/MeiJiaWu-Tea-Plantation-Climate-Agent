@@ -1,0 +1,38 @@
+
+film3.mp4 — energy map:
+  0.0s |                                                |
+  4.0s |                                                |
+  8.0s |                                                |
+ 12.0s |     ..                                         |
+ 16.0s |        ...   .                                 |
+ 20.0s |                              .                 |
+ 24.0s |                                ...       .     |
+ 28.0s |                                                |
+ 32.0s |                                                |
+ 36.0s |                  ..                     @- .   |
+ 40.0s |                                                |
+ 44.0s |                                  .-*-:     . . |
+ 48.0s |.                                               |
+ 52.0s |                                          ..:   |
+ 56.0s |                                                |
+ 60.0s |                                                |
+ 64.0s |                                                |
+ 68.0s |                                                |
+ 72.0s |                        -    ..                 |
+ 76.0s |                  ..                            |
+ 80.0s |                                                |
+ 84.0s |                                .::             |
+ 88.0s |                                                |
+ 92.0s |                                                |
+ 96.0s |                                                |
+
+  PASS  cadence    shot lengths [4.0, 4.6, 3.4, 5.0, 6.0, 4.0, 3.5, 8.5, 8.0, 9.0, 5.0, 5.8, 7.2, 4.0, 11.4, 2.6, 8.0, 0.0]  CV 0.48 (need >= 0.25)
+  PASS  rest       still 0.894  longest quiet 18.25 s
+  PASS  burst      bursts [(46.92, 47.08)]
+  PASS  not-flat   row-profile variation 1.16 (advisory, >= 0.35)
+  PASS  audio      peak -8.0 dBFS  clipped 0  quiet 0.741
+  PASS  continuity carry score 0.92 over 12 boundaries; nothing carried at [12.3] (probe.py lists each)
+  PASS  curves     peak 1042 px/frame @30 fps (draw:shape:#c92f33 at 5.60 s), no render.json, film smear 0.45 (blurred); soft curves 88 % of travel, median t80 0.77
+  skip  framing    (declare window.__meta.inFrame = {id: [t0, t1] | [t0, t1, 'whole']} to check what must stay in frame)
+
+VERDICT: PASS

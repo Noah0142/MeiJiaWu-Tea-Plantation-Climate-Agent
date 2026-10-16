@@ -1,0 +1,22 @@
+{
+ "comp": "C:\\Hackthon\\AI4Climate\\docs\\promo\\film3\\comp3.html?seg=5",
+ "fps": 30,
+ "scale": 1,
+ "size": [
+  1920,
+  1080
+ ],
+ "shutter": 180.0,
+ "samples": "adaptive",
+ "gap_px": 24.0,
+ "samples_per_moving_frame": {
+  "4": 117
+ },
+ "workers": 6,
+ "frames": 420,
+ "still_frames": 303,
+ "cut_frames": 37,
+ "captures": 1074,
+ "seconds": 40.5,
+ "final": false
+}

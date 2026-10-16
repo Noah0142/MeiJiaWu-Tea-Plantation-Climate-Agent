@@ -61,3 +61,18 @@ docs/promo/film2/check*.png
 docs/promo/film2/assets/shots/
 docs/promo/film2/_frames/
 docs/promo/film2/render2.log
+
+# 影片三: 分段渲染产物与检查帧(成片 film3.mp4 入库)
+docs/promo/film3/seg*.mp4
+docs/promo/film3/list.txt
+docs/promo/film3/render*.log
+docs/promo/film3/build3.log
+docs/promo/film3/s3_*.png
+docs/promo/film3/check3*.png
+docs/promo/film3/seam_*.jpg
+docs/promo/film3/seams.png
+docs/promo/film3/nib_*.png
+docs/promo/film3/nib_check.png
+docs/promo/film3/film3.mp4
+docs/promo/film3/_frames/
+docs/promo/film3/assets/shots/
